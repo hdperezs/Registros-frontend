@@ -217,7 +217,7 @@ textarea {
 }
 .t-head {
   display: grid;
-  grid-template-columns: 2.1fr 1.9fr 1fr 0.9fr 1fr;
+  grid-template-columns: 1.8fr 1.6fr 0.9fr 0.8fr 0.9fr 1fr;
   padding: 10px 20px;
   background: #e2e9e1;
   font-family: 'IBM Plex Mono', monospace;
@@ -227,7 +227,7 @@ textarea {
 }
 .t-row {
   display: grid;
-  grid-template-columns: 2.1fr 1.9fr 1fr 0.9fr 1fr;
+  grid-template-columns: 1.8fr 1.6fr 0.9fr 0.8fr 0.9fr 1fr;
   align-items: center;
   padding: 13px 20px;
   border-top: 1px dashed var(--line-soft);

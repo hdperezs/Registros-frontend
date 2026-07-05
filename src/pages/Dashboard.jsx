@@ -175,6 +175,7 @@ export default function Dashboard() {
               <span>CATEGORÍA</span>
               <span>VENCE</span>
               <span>ESTADO</span>
+              <span>GESTIONADO POR</span>
             </div>
 
             {filtrados.length === 0 && (
@@ -197,6 +198,9 @@ export default function Dashboard() {
                   <div>{formatFecha(t.fecha_vencimiento)}</div>
                   <div>
                     <span className={`days ${urgencia.clase}`}>{urgencia.texto}</span>
+                  </div>
+                  <div className="mono" style={{ fontSize: 12, color: 'var(--ink-soft)' }}>
+                    {t.creado_por_nombre || '—'}
                   </div>
                 </Link>
               )

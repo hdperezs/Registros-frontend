@@ -96,10 +96,11 @@ export default function EmpresaDetail() {
 
             <div className="section-label">Historial de trámites</div>
             <div className="table-wrap">
-              <div className="t-head" style={{ gridTemplateColumns: '2.3fr 1fr 1fr' }}>
+              <div className="t-head" style={{ gridTemplateColumns: '1.8fr 0.9fr 0.9fr 1fr' }}>
                 <span>TRÁMITE</span>
                 <span>CATEGORÍA</span>
                 <span>ESTADO</span>
+                <span>CREADO POR</span>
               </div>
 
               {tramites.length === 0 && (
@@ -115,7 +116,7 @@ export default function EmpresaDetail() {
                   <div
                     key={t.id}
                     className="t-row"
-                    style={{ gridTemplateColumns: '2.3fr 1fr 1fr' }}
+                    style={{ gridTemplateColumns: '1.8fr 0.9fr 0.9fr 1fr' }}
                     onClick={() => setTramiteEditando(t)}
                   >
                     <div>
@@ -136,6 +137,9 @@ export default function EmpresaDetail() {
                           Sin vencimiento
                         </span>
                       )}
+                    </div>
+                    <div className="mono" style={{ fontSize: 12, color: 'var(--ink-soft)' }}>
+                      {t.creado_por_nombre || '—'}
                     </div>
                   </div>
                 )
