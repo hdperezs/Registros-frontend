@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { createEmpresa } from '../api.js'
 
 export default function NuevaEmpresaModal({ onClose, onCreated }) {
@@ -9,9 +9,13 @@ export default function NuevaEmpresaModal({ onClose, onCreated }) {
   const [contactoTelefono, setContactoTelefono] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const enviando = useRef(false)
 
   async function handleSubmit(e) {
     e.preventDefault()
+    if (enviando.current) return
+    enviando.current = true
+
     setError('')
     setSaving(true)
     try {
@@ -25,6 +29,7 @@ export default function NuevaEmpresaModal({ onClose, onCreated }) {
       onCreated(empresa)
     } catch (err) {
       setError(err.message || 'No se pudo crear la empresa')
+      enviando.current = false
     } finally {
       setSaving(false)
     }

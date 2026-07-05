@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import Sidebar from '../components/Sidebar.jsx'
 import NuevoTramiteModal from '../components/NuevoTramiteModal.jsx'
+import EditarTramiteModal from '../components/EditarTramiteModal.jsx'
 import { getEmpresa, getTramitesDeEmpresa } from '../api.js'
 import { tagClass, categoriaLabel, formatFecha } from '../utils.js'
 
@@ -12,6 +13,7 @@ export default function EmpresaDetail() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [mostrarModal, setMostrarModal] = useState(false)
+  const [tramiteEditando, setTramiteEditando] = useState(null)
 
   function cargar() {
     setLoading(true)
@@ -90,7 +92,12 @@ export default function EmpresaDetail() {
               )}
 
               {tramites.map((t) => (
-                <div key={t.id} className="t-row" style={{ gridTemplateColumns: '2.3fr 1fr 1fr', cursor: 'default' }}>
+                <div
+                  key={t.id}
+                  className="t-row"
+                  style={{ gridTemplateColumns: '2.3fr 1fr 1fr' }}
+                  onClick={() => setTramiteEditando(t)}
+                >
                   <div>
                     <div className="co">{t.tramite_nombre}</div>
                     {t.numero_expediente && <div className="co-sub">{t.numero_expediente}</div>}
@@ -114,6 +121,21 @@ export default function EmpresaDetail() {
           onClose={() => setMostrarModal(false)}
           onCreated={() => {
             setMostrarModal(false)
+            cargar()
+          }}
+        />
+      )}
+
+      {tramiteEditando && (
+        <EditarTramiteModal
+          tramite={tramiteEditando}
+          onClose={() => setTramiteEditando(null)}
+          onUpdated={() => {
+            setTramiteEditando(null)
+            cargar()
+          }}
+          onDeleted={() => {
+            setTramiteEditando(null)
             cargar()
           }}
         />

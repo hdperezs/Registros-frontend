@@ -65,3 +65,8 @@ export const getProximosVencer = (dias = 60) =>
 export const createTramite = (data) =>
   request('/tramites', { method: 'POST', body: JSON.stringify(data) })
 export const getTramitesDeEmpresa = (id) => request(`/empresas/${id}/tramites`)
+export const updateTramite = (id, data) =>
+  request(`/tramites/${id}`, { method: 'PATCH', body: JSON.stringify(data) })
+export const deleteTramite = (id) => request(`/tramites/${id}`, { method: 'DELETE' })
+export const updateEmpresa = (id, data) =>
+  request(`/empresas/${id}`, { method: 'PATCH', body: JSON.stringify(data) })

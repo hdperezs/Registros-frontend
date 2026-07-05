@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { getTiposTramite, createTramite } from '../api.js'
 import { categoriaLabel } from '../utils.js'
 
@@ -13,6 +13,7 @@ export default function NuevoTramiteModal({ empresaId, onClose, onCreated }) {
   const [notas, setNotas] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const enviando = useRef(false)
 
   useEffect(() => {
     getTiposTramite(categoria)
@@ -27,9 +28,13 @@ export default function NuevoTramiteModal({ empresaId, onClose, onCreated }) {
 
   async function handleSubmit(e) {
     e.preventDefault()
+    if (enviando.current) return
+    enviando.current = true
+
     setError('')
     if (!tipoId) {
       setError('Selecciona un tipo de trámite')
+      enviando.current = false
       return
     }
     setSaving(true)
@@ -44,6 +49,7 @@ export default function NuevoTramiteModal({ empresaId, onClose, onCreated }) {
       onCreated()
     } catch (err) {
       setError(err.message || 'No se pudo crear el trámite')
+      enviando.current = false
     } finally {
       setSaving(false)
     }
