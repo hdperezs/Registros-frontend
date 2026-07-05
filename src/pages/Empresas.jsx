@@ -44,7 +44,7 @@ export default function Empresas() {
             <div className="eyebrow">Química Verde S.A. · cartera de clientes</div>
             <h1 style={{ fontSize: 26 }}>Empresas</h1>
           </div>
-          <div style={{ display: 'flex', gap: 10 }}>
+          <div className="topbar-actions" style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
             <div className="search">
               <input
                 type="text"

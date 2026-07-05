@@ -103,8 +103,8 @@ export default function Dashboard() {
             <div className="eyebrow">Química Verde S.A. · panel de trámites</div>
             <h1 style={{ fontSize: 26 }}>Lo que vence pronto</h1>
           </div>
-          <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', position: 'relative', flexWrap: 'wrap' }}>
-            <div>
+          <div className="topbar-actions" style={{ display: 'flex', gap: 10, alignItems: 'flex-start', position: 'relative', flexWrap: 'wrap' }}>
+            <div className="search-wrap">
               <div className="search">
                 <input
                   type="text"
@@ -119,7 +119,7 @@ export default function Dashboard() {
                     position: 'absolute',
                     top: 44,
                     left: 0,
-                    width: 300,
+                    width: 'min(300px, calc(100vw - 40px))',
                     background: 'var(--paper-card)',
                     border: '1px solid var(--line)',
                     borderRadius: 3,
