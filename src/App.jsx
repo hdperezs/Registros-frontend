@@ -2,10 +2,13 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import Login from './pages/Login.jsx'
 import Dashboard from './pages/Dashboard.jsx'
 import EmpresaDetail from './pages/EmpresaDetail.jsx'
+import Usuarios from './pages/Usuarios.jsx'
 import { isAuthenticated } from './api.js'
+import { UserProvider } from './context/UserContext.jsx'
 
 function Protected({ children }) {
-  return isAuthenticated() ? children : <Navigate to="/login" replace />
+  if (!isAuthenticated()) return <Navigate to="/login" replace />
+  return <UserProvider>{children}</UserProvider>
 }
 
 export default function App() {
@@ -25,6 +28,14 @@ export default function App() {
         element={
           <Protected>
             <EmpresaDetail />
+          </Protected>
+        }
+      />
+      <Route
+        path="/usuarios"
+        element={
+          <Protected>
+            <Usuarios />
           </Protected>
         }
       />

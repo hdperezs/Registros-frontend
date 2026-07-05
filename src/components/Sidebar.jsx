@@ -1,16 +1,10 @@
 import { Link, useNavigate } from 'react-router-dom'
-import { logout, getMe } from '../api.js'
-import { useEffect, useState } from 'react'
+import { logout } from '../api.js'
+import { useUser } from '../context/UserContext.jsx'
 
 export default function Sidebar({ active }) {
   const navigate = useNavigate()
-  const [nombre, setNombre] = useState('')
-
-  useEffect(() => {
-    getMe()
-      .then((u) => setNombre(u.nombre))
-      .catch(() => {})
-  }, [])
+  const { user } = useUser()
 
   function handleLogout() {
     logout()
@@ -30,9 +24,22 @@ export default function Sidebar({ active }) {
         >
           Dashboard
         </div>
+        {user?.rol === 'admin' && (
+          <div
+            className="nav-item"
+            style={active === 'usuarios' ? { background: 'rgba(255,255,255,0.06)', color: '#f2f5ef' } : {}}
+            onClick={() => navigate('/usuarios')}
+          >
+            Usuarios
+          </div>
+        )}
       </div>
       <div className="nav-user">
-        {nombre && <div>Sesión: {nombre}</div>}
+        {user && (
+          <div>
+            {user.nombre} <span style={{ opacity: 0.6 }}>· {user.rol}</span>
+          </div>
+        )}
         <button onClick={handleLogout}>Cerrar sesión</button>
       </div>
     </aside>

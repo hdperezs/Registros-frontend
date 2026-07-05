@@ -3,11 +3,14 @@ import { useParams, Link } from 'react-router-dom'
 import Sidebar from '../components/Sidebar.jsx'
 import NuevoTramiteModal from '../components/NuevoTramiteModal.jsx'
 import EditarTramiteModal from '../components/EditarTramiteModal.jsx'
+import GestoresAsignados from '../components/GestoresAsignados.jsx'
 import { getEmpresa, getTramitesDeEmpresa } from '../api.js'
 import { tagClass, categoriaLabel, formatFecha } from '../utils.js'
+import { useUser } from '../context/UserContext.jsx'
 
 export default function EmpresaDetail() {
   const { id } = useParams()
+  const { user } = useUser()
   const [empresa, setEmpresa] = useState(null)
   const [tramites, setTramites] = useState([])
   const [loading, setLoading] = useState(true)
@@ -76,6 +79,15 @@ export default function EmpresaDetail() {
                 <div className="val">{porVencer}</div>
               </div>
             </div>
+
+            {user?.rol === 'admin' && (
+              <>
+                <div className="section-label">Gestores asignados</div>
+                <div style={{ marginBottom: 28 }}>
+                  <GestoresAsignados empresaId={id} />
+                </div>
+              </>
+            )}
 
             <div className="section-label">Historial de trámites</div>
             <div className="table-wrap">

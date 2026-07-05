@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { updateTramite, deleteTramite } from '../api.js'
 import { categoriaLabel } from '../utils.js'
+import { useUser } from '../context/UserContext.jsx'
 
 const ESTADOS = ['en_tramite', 'vigente', 'por_vencer', 'vencido', 'renovacion_en_curso']
 
@@ -13,6 +14,7 @@ const ESTADO_LABELS = {
 }
 
 export default function EditarTramiteModal({ tramite, onClose, onUpdated, onDeleted }) {
+  const { user } = useUser()
   const [numeroExpediente, setNumeroExpediente] = useState(tramite.numero_expediente || '')
   const [fechaInicio, setFechaInicio] = useState(tramite.fecha_inicio)
   const [fechaVencimiento, setFechaVencimiento] = useState(tramite.fecha_vencimiento || '')
@@ -138,7 +140,9 @@ export default function EditarTramiteModal({ tramite, onClose, onUpdated, onDele
           </div>
 
           <div className="modal-foot" style={{ justifyContent: 'space-between' }}>
-            {!confirmarBorrado ? (
+            {user?.rol !== 'admin' ? (
+              <span />
+            ) : !confirmarBorrado ? (
               <button
                 type="button"
                 className="btn-ghost"

@@ -2,13 +2,16 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Sidebar from '../components/Sidebar.jsx'
 import NuevaEmpresaModal from '../components/NuevaEmpresaModal.jsx'
-import { getProximosVencer, getEmpresas } from '../api.js'
+import { getProximosVencer, getEmpresas, getDashboardResumen } from '../api.js'
 import { tagClass, categoriaLabel, diasRestantes, estadoUrgencia, formatFecha } from '../utils.js'
+import { useUser } from '../context/UserContext.jsx'
 
 const CATEGORIAS = ['ambiente', 'farma', 'alimentos', 'sso', 'otros']
 
 export default function Dashboard() {
+  const { user } = useUser()
   const [tramites, setTramites] = useState([])
+  const [resumen, setResumen] = useState({ total_empresas: 0, empresas_sin_tramites: 0 })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [categoria, setCategoria] = useState('todos')
@@ -23,6 +26,9 @@ export default function Dashboard() {
       .then(setTramites)
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false))
+    getDashboardResumen()
+      .then(setResumen)
+      .catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -109,9 +115,22 @@ export default function Dashboard() {
                 </div>
               )}
             </div>
-            <button className="btn-primary" onClick={() => setMostrarModal(true)}>
-              + Nueva empresa
-            </button>
+            {user?.rol === 'admin' && (
+              <button className="btn-primary" onClick={() => setMostrarModal(true)}>
+                + Nueva empresa
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div className="stats" style={{ marginBottom: 12 }}>
+          <div className="stat">
+            <div className="lbl">Empresas en cartera</div>
+            <div className="val">{resumen.total_empresas}</div>
+          </div>
+          <div className="stat warn">
+            <div className="lbl">Sin trámites registrados</div>
+            <div className="val">{resumen.empresas_sin_tramites}</div>
           </div>
         </div>
 

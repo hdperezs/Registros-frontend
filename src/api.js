@@ -70,3 +70,13 @@ export const updateTramite = (id, data) =>
 export const deleteTramite = (id) => request(`/tramites/${id}`, { method: 'DELETE' })
 export const updateEmpresa = (id, data) =>
   request(`/empresas/${id}`, { method: 'PATCH', body: JSON.stringify(data) })
+export const getDashboardResumen = () => request('/dashboard/resumen')
+export const getUsuarios = () => request('/usuarios')
+export const createUsuario = (data) =>
+  request('/usuarios', { method: 'POST', body: JSON.stringify(data) })
+export const getGestoresDeEmpresa = (empresaId) => request(`/empresas/${empresaId}/gestores`)
+export const asignarGestores = (empresaId, usuarioIds) =>
+  request(`/empresas/${empresaId}/gestores`, {
+    method: 'PUT',
+    body: JSON.stringify({ usuario_ids: usuarioIds }),
+  })
