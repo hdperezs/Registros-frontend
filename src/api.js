@@ -61,8 +61,9 @@ export const createEmpresa = (data) =>
   request('/empresas', { method: 'POST', body: JSON.stringify(data) })
 export const getTiposTramite = (categoria = '') =>
   request(`/tipos-tramite?categoria=${encodeURIComponent(categoria)}`)
-export const getProximosVencer = (dias = 60) =>
-  request(`/dashboard/proximos-vencer?dias=${dias}`)
+export const getProximosVencer = (dias = 60, gestorId = '') =>
+  request(`/dashboard/proximos-vencer?dias=${dias}${gestorId ? `&gestor_id=${gestorId}` : ''}`)
+export const buscarTramites = (q) => request(`/tramites/buscar?q=${encodeURIComponent(q)}`)
 export const createTramite = (data) =>
   request('/tramites', { method: 'POST', body: JSON.stringify(data) })
 export const getTramitesDeEmpresa = (id) => request(`/empresas/${id}/tramites`)
@@ -71,7 +72,8 @@ export const updateTramite = (id, data) =>
 export const deleteTramite = (id) => request(`/tramites/${id}`, { method: 'DELETE' })
 export const updateEmpresa = (id, data) =>
   request(`/empresas/${id}`, { method: 'PATCH', body: JSON.stringify(data) })
-export const getDashboardResumen = () => request('/dashboard/resumen')
+export const getDashboardResumen = (gestorId = '') =>
+  request(`/dashboard/resumen${gestorId ? `?gestor_id=${gestorId}` : ''}`)
 export const getUsuarios = () => request('/usuarios')
 export const createUsuario = (data) =>
   request('/usuarios', { method: 'POST', body: JSON.stringify(data) })

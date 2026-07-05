@@ -212,7 +212,7 @@ textarea {
 .table-wrap {
   border: 1px solid var(--line);
   border-radius: 3px;
-  overflow: hidden;
+  overflow-x: auto;
   background: var(--paper-card);
 }
 .t-head {
@@ -520,4 +520,45 @@ textarea {
   color: var(--ink-soft);
   font-family: 'IBM Plex Mono', monospace;
   font-size: 13px;
+}
+
+/* ---------- responsivo (celular) ---------- */
+@media (max-width: 760px) {
+  .shell {
+    grid-template-columns: 1fr;
+  }
+  .sidebar {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 14px 16px;
+    overflow-x: auto;
+  }
+  .sidebar .nav-group {
+    display: flex;
+    flex-direction: row;
+    gap: 6px;
+    margin-bottom: 0 !important;
+    margin-left: 16px;
+  }
+  .sidebar .nav-item {
+    white-space: nowrap;
+    margin-bottom: 0;
+  }
+  .sidebar .nav-user {
+    display: none;
+  }
+  .main {
+    padding: 18px 16px;
+  }
+  .stats {
+    grid-template-columns: 1fr 1fr;
+  }
+  .topbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .search {
+    min-width: 0;
+  }
 }

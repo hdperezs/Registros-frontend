@@ -2,11 +2,18 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Sidebar from '../components/Sidebar.jsx'
 import NuevaEmpresaModal from '../components/NuevaEmpresaModal.jsx'
-import { getProximosVencer, getEmpresas, getDashboardResumen } from '../api.js'
+import { getProximosVencer, getEmpresas, getDashboardResumen, getUsuarios, buscarTramites } from '../api.js'
 import { tagClass, categoriaLabel, diasRestantes, estadoUrgencia, formatFecha } from '../utils.js'
 import { useUser } from '../context/UserContext.jsx'
 
 const CATEGORIAS = ['ambiente', 'farma', 'alimentos', 'sso', 'otros']
+const VENTANAS = [
+  { label: '7 días', valor: 7 },
+  { label: '30 días', valor: 30 },
+  { label: '60 días', valor: 60 },
+  { label: '90 días', valor: 90 },
+  { label: 'Todos', valor: 3650 },
+]
 
 export default function Dashboard() {
   const { user } = useUser()
@@ -15,32 +22,52 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [categoria, setCategoria] = useState('todos')
+  const [ventana, setVentana] = useState(90)
+  const [gestores, setGestores] = useState([])
+  const [gestorId, setGestorId] = useState('')
   const [busqueda, setBusqueda] = useState('')
-  const [resultados, setResultados] = useState([])
+  const [empresasResultado, setEmpresasResultado] = useState([])
+  const [expedientesResultado, setExpedientesResultado] = useState([])
   const [buscando, setBuscando] = useState(false)
   const [mostrarModal, setMostrarModal] = useState(false)
   const navigate = useNavigate()
 
   useEffect(() => {
-    getProximosVencer(90)
-      .then(setTramites)
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false))
-    getDashboardResumen()
-      .then(setResumen)
-      .catch(() => {})
-  }, [])
+    if (user?.rol === 'admin') {
+      getUsuarios()
+        .then((data) => setGestores(data.filter((u) => u.rol === 'gestor')))
+        .catch(() => {})
+    }
+  }, [user])
 
   useEffect(() => {
-    if (!busqueda.trim()) {
-      setResultados([])
+    setLoading(true)
+    Promise.all([getProximosVencer(ventana, gestorId), getDashboardResumen(gestorId)])
+      .then(([t, r]) => {
+        setTramites(t)
+        setResumen(r)
+      })
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false))
+  }, [ventana, gestorId])
+
+  useEffect(() => {
+    if (!busqueda.trim() || busqueda.trim().length < 2) {
+      setEmpresasResultado([])
+      setExpedientesResultado([])
       return
     }
     setBuscando(true)
     const timeout = setTimeout(() => {
-      getEmpresas(busqueda)
-        .then(setResultados)
-        .catch(() => setResultados([]))
+      Promise.all([getEmpresas(busqueda), buscarTramites(busqueda)])
+        .then(([empresas, expedientes]) => {
+          setEmpresasResultado(empresas)
+          setExpedientesResultado(expedientes)
+        })
+        .catch(() => {
+          setEmpresasResultado([])
+          setExpedientesResultado([])
+        })
         .finally(() => setBuscando(false))
     }, 300)
     return () => clearTimeout(timeout)
@@ -65,6 +92,8 @@ export default function Dashboard() {
     return { semana, mes, vencidos, total: tramites.length }
   }, [tramites])
 
+  const hayResultadosBusqueda = empresasResultado.length > 0 || expedientesResultado.length > 0
+
   return (
     <div className="shell">
       <Sidebar active="dashboard" />
@@ -74,44 +103,68 @@ export default function Dashboard() {
             <div className="eyebrow">Química Verde S.A. · panel de trámites</div>
             <h1 style={{ fontSize: 26 }}>Lo que vence pronto</h1>
           </div>
-          <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', position: 'relative' }}>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', position: 'relative', flexWrap: 'wrap' }}>
             <div>
               <div className="search">
                 <input
                   type="text"
-                  placeholder="Buscar empresa..."
+                  placeholder="Buscar empresa o N° expediente..."
                   value={busqueda}
                   onChange={(e) => setBusqueda(e.target.value)}
                 />
               </div>
-              {busqueda.trim() && (
+              {busqueda.trim().length >= 2 && (
                 <div
                   style={{
                     position: 'absolute',
                     top: 44,
-                    right: 132,
-                    width: 240,
+                    left: 0,
+                    width: 300,
                     background: 'var(--paper-card)',
                     border: '1px solid var(--line)',
                     borderRadius: 3,
                     zIndex: 10,
-                    maxHeight: 240,
+                    maxHeight: 320,
                     overflowY: 'auto',
                   }}
                 >
                   {buscando && <div style={{ padding: 12, fontSize: 12.5 }}>Buscando...</div>}
-                  {!buscando && resultados.length === 0 && (
+                  {!buscando && !hayResultadosBusqueda && (
                     <div style={{ padding: 12, fontSize: 12.5, color: 'var(--ink-soft)' }}>Sin resultados</div>
                   )}
-                  {resultados.map((e) => (
-                    <div
-                      key={e.id}
-                      onClick={() => navigate(`/empresas/${e.id}`)}
-                      style={{ padding: '10px 14px', fontSize: 13, cursor: 'pointer', borderBottom: '1px solid var(--line-soft)' }}
-                    >
-                      {e.nombre}
-                    </div>
-                  ))}
+                  {!buscando && empresasResultado.length > 0 && (
+                    <>
+                      <div className="mono" style={{ padding: '8px 14px 4px', fontSize: 10.5, color: 'var(--ink-soft)' }}>
+                        EMPRESAS
+                      </div>
+                      {empresasResultado.map((e) => (
+                        <div
+                          key={e.id}
+                          onClick={() => navigate(`/empresas/${e.id}`)}
+                          style={{ padding: '10px 14px', fontSize: 13, cursor: 'pointer', borderBottom: '1px solid var(--line-soft)' }}
+                        >
+                          {e.nombre}
+                        </div>
+                      ))}
+                    </>
+                  )}
+                  {!buscando && expedientesResultado.length > 0 && (
+                    <>
+                      <div className="mono" style={{ padding: '8px 14px 4px', fontSize: 10.5, color: 'var(--ink-soft)' }}>
+                        EXPEDIENTES
+                      </div>
+                      {expedientesResultado.map((t) => (
+                        <div
+                          key={t.id}
+                          onClick={() => navigate(`/empresas/${t.empresa_id}`)}
+                          style={{ padding: '10px 14px', fontSize: 13, cursor: 'pointer', borderBottom: '1px solid var(--line-soft)' }}
+                        >
+                          <div>{t.numero_expediente}</div>
+                          <div className="co-sub">{t.empresa_nombre} — {t.tramite_nombre}</div>
+                        </div>
+                      ))}
+                    </>
+                  )}
                 </div>
               )}
             </div>
@@ -153,23 +206,45 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="filters">
-          <div className={`chip ${categoria === 'todos' ? 'active' : ''}`} onClick={() => setCategoria('todos')}>
-            Todos
-          </div>
-          {CATEGORIAS.map((c) => (
-            <div key={c} className={`chip ${categoria === c ? 'active' : ''}`} onClick={() => setCategoria(c)}>
-              {categoriaLabel(c)}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10, marginBottom: 12 }}>
+          <div className="filters" style={{ marginBottom: 0 }}>
+            <div className={`chip ${categoria === 'todos' ? 'active' : ''}`} onClick={() => setCategoria('todos')}>
+              Todos
             </div>
-          ))}
+            {CATEGORIAS.map((c) => (
+              <div key={c} className={`chip ${categoria === c ? 'active' : ''}`} onClick={() => setCategoria(c)}>
+                {categoriaLabel(c)}
+              </div>
+            ))}
+          </div>
+
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+            {user?.rol === 'admin' && gestores.length > 0 && (
+              <select value={gestorId} onChange={(e) => setGestorId(e.target.value)} style={{ maxWidth: 180 }}>
+                <option value="">Todos los gestores</option>
+                {gestores.map((g) => (
+                  <option key={g.id} value={g.id}>
+                    {g.nombre}
+                  </option>
+                ))}
+              </select>
+            )}
+            <select value={ventana} onChange={(e) => setVentana(Number(e.target.value))} style={{ maxWidth: 140 }}>
+              {VENTANAS.map((v) => (
+                <option key={v.valor} value={v.valor}>
+                  {v.label}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {loading && <div className="loading">Cargando trámites...</div>}
         {error && <div className="error-msg">{error}</div>}
 
         {!loading && !error && (
-          <div className="table-wrap">
-            <div className="t-head">
+          <div className="table-wrap" style={{ overflowX: 'auto' }}>
+            <div className="t-head" style={{ minWidth: 720 }}>
               <span>EMPRESA</span>
               <span>TRÁMITE</span>
               <span>CATEGORÍA</span>
@@ -179,14 +254,14 @@ export default function Dashboard() {
             </div>
 
             {filtrados.length === 0 && (
-              <div className="empty-state">No hay trámites con vencimiento próximo en esta categoría.</div>
+              <div className="empty-state">No hay trámites con vencimiento próximo en esta categoría/ventana.</div>
             )}
 
             {filtrados.map((t) => {
               const dias = diasRestantes(t.fecha_vencimiento)
               const urgencia = estadoUrgencia(dias)
               return (
-                <Link key={t.id} to={`/empresas/${t.empresa_id}`} className="t-row">
+                <Link key={t.id} to={`/empresas/${t.empresa_id}`} className="t-row" style={{ minWidth: 720 }}>
                   <div>
                     <div className="co">{t.empresa_nombre}</div>
                     {t.numero_expediente && <div className="co-sub">{t.numero_expediente}</div>}
