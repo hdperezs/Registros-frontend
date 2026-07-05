@@ -5,7 +5,7 @@ import NuevoTramiteModal from '../components/NuevoTramiteModal.jsx'
 import EditarTramiteModal from '../components/EditarTramiteModal.jsx'
 import GestoresAsignados from '../components/GestoresAsignados.jsx'
 import { getEmpresa, getTramitesDeEmpresa } from '../api.js'
-import { tagClass, categoriaLabel, formatFecha } from '../utils.js'
+import { tagClass, categoriaLabel, formatFecha, diasRestantes, estadoUrgencia } from '../utils.js'
 import { useUser } from '../context/UserContext.jsx'
 
 export default function EmpresaDetail() {
@@ -34,8 +34,13 @@ export default function EmpresaDetail() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
 
-  const vigentes = tramites.filter((t) => t.estado === 'vigente' || t.estado === 'en_tramite').length
-  const porVencer = tramites.filter((t) => t.estado === 'por_vencer' || t.estado === 'vencido').length
+  // "Por vencer" se calcula con la fecha real (<=30 días o ya vencido), no con el campo
+  // "estado" (que se pone a mano y no cambia solo con el paso de los días).
+  const porVencer = tramites.filter((t) => {
+    const dias = diasRestantes(t.fecha_vencimiento)
+    return dias !== null && dias <= 30
+  }).length
+  const vigentes = tramites.length - porVencer
 
   return (
     <div className="shell">
@@ -103,25 +108,38 @@ export default function EmpresaDetail() {
                 </div>
               )}
 
-              {tramites.map((t) => (
-                <div
-                  key={t.id}
-                  className="t-row"
-                  style={{ gridTemplateColumns: '2.3fr 1fr 1fr' }}
-                  onClick={() => setTramiteEditando(t)}
-                >
-                  <div>
-                    <div className="co">{t.tramite_nombre}</div>
-                    {t.numero_expediente && <div className="co-sub">{t.numero_expediente}</div>}
+              {tramites.map((t) => {
+                const dias = diasRestantes(t.fecha_vencimiento)
+                const urgencia = estadoUrgencia(dias)
+                return (
+                  <div
+                    key={t.id}
+                    className="t-row"
+                    style={{ gridTemplateColumns: '2.3fr 1fr 1fr' }}
+                    onClick={() => setTramiteEditando(t)}
+                  >
+                    <div>
+                      <div className="co">{t.tramite_nombre}</div>
+                      {t.numero_expediente && <div className="co-sub">{t.numero_expediente}</div>}
+                    </div>
+                    <div>
+                      <span className={tagClass(t.categoria)}>{categoriaLabel(t.categoria)}</span>
+                    </div>
+                    <div>
+                      {t.fecha_vencimiento ? (
+                        <>
+                          <span className={`days ${urgencia.clase}`}>{urgencia.texto}</span>
+                          <div className="co-sub">{formatFecha(t.fecha_vencimiento)}</div>
+                        </>
+                      ) : (
+                        <span className="mono" style={{ fontSize: 12, color: 'var(--ink-soft)' }}>
+                          Sin vencimiento
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    <span className={tagClass(t.categoria)}>{categoriaLabel(t.categoria)}</span>
-                  </div>
-                  <div className="mono" style={{ fontSize: 12, color: 'var(--ink-soft)' }}>
-                    {t.fecha_vencimiento ? formatFecha(t.fecha_vencimiento) : 'Sin vencimiento'}
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </>
         )}
