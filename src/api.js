@@ -54,7 +54,8 @@ export function isAuthenticated() {
 }
 
 export const getMe = () => request('/auth/me')
-export const getEmpresas = (q = '') => request(`/empresas?q=${encodeURIComponent(q)}`)
+export const getEmpresas = (q = '', limit = 50, offset = 0) =>
+  request(`/empresas?q=${encodeURIComponent(q)}&limit=${limit}&offset=${offset}`)
 export const getEmpresa = (id) => request(`/empresas/${id}`)
 export const createEmpresa = (data) =>
   request('/empresas', { method: 'POST', body: JSON.stringify(data) })

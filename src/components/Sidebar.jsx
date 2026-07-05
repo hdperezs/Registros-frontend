@@ -24,6 +24,13 @@ export default function Sidebar({ active }) {
         >
           Dashboard
         </div>
+        <div
+          className="nav-item"
+          style={active === 'empresas' ? { background: 'rgba(255,255,255,0.06)', color: '#f2f5ef' } : {}}
+          onClick={() => navigate('/empresas')}
+        >
+          Empresas
+        </div>
         {user?.rol === 'admin' && (
           <div
             className="nav-item"

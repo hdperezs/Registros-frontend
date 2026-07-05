@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import Login from './pages/Login.jsx'
 import Dashboard from './pages/Dashboard.jsx'
+import Empresas from './pages/Empresas.jsx'
 import EmpresaDetail from './pages/EmpresaDetail.jsx'
 import Usuarios from './pages/Usuarios.jsx'
 import { isAuthenticated } from './api.js'
@@ -20,6 +21,14 @@ export default function App() {
         element={
           <Protected>
             <Dashboard />
+          </Protected>
+        }
+      />
+      <Route
+        path="/empresas"
+        element={
+          <Protected>
+            <Empresas />
           </Protected>
         }
       />
