@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import Sidebar from '../components/Sidebar.jsx'
 import { useUser } from '../context/UserContext.jsx'
-import { getUsuarios, createUsuario } from '../api.js'
+import { getUsuarios, createUsuario, updateUsuario } from '../api.js'
 
 export default function Usuarios() {
   const { user, loading: cargandoUser } = useUser()
@@ -49,6 +49,26 @@ export default function Usuarios() {
       enviando.current = false
     } finally {
       setSaving(false)
+    }
+  }
+
+  async function handleCambiarRol(usuario, nuevoRol) {
+    setError('')
+    try {
+      await updateUsuario(usuario.id, { rol: nuevoRol })
+      cargar()
+    } catch (err) {
+      setError(err.message || 'No se pudo cambiar el rol')
+    }
+  }
+
+  async function handleToggleActivo(usuario) {
+    setError('')
+    try {
+      await updateUsuario(usuario.id, { activo: !usuario.activo })
+      cargar()
+    } catch (err) {
+      setError(err.message || 'No se pudo actualizar el usuario')
     }
   }
 
@@ -111,23 +131,52 @@ export default function Usuarios() {
         {error && <div className="error-msg">{error}</div>}
         {!loading && !error && (
           <div className="table-wrap" style={{ maxWidth: 640 }}>
-            <div className="t-head" style={{ gridTemplateColumns: '2fr 1fr' }}>
+            <div className="t-head" style={{ gridTemplateColumns: '2fr 1fr 1fr' }}>
               <span>NOMBRE / CORREO</span>
               <span>ROL</span>
+              <span>ESTADO</span>
             </div>
             {usuarios.map((u) => (
-              <div key={u.id} className="t-row" style={{ gridTemplateColumns: '2fr 1fr', cursor: 'default' }}>
+              <div key={u.id} className="t-row" style={{ gridTemplateColumns: '2fr 1fr 1fr', cursor: 'default' }}>
                 <div>
                   <div className="co">{u.nombre}</div>
                   <div className="co-sub">{u.email}</div>
                 </div>
-                <div className="mono" style={{ fontSize: 12 }}>
-                  {u.rol}
+                <div onClick={(e) => e.stopPropagation()}>
+                  <select
+                    value={u.rol}
+                    onChange={(e) => handleCambiarRol(u, e.target.value)}
+                    disabled={u.id === user?.id}
+                    style={{ fontSize: 12, padding: '6px 26px 6px 10px' }}
+                  >
+                    <option value="gestor">Gestor</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                </div>
+                <div onClick={(e) => e.stopPropagation()}>
+                  <button
+                    className="btn-ghost"
+                    style={{
+                      fontSize: 11,
+                      padding: '6px 10px',
+                      color: u.activo ? 'var(--seal-green)' : 'var(--seal-red)',
+                      borderColor: u.activo ? 'var(--seal-green)' : 'var(--seal-red)',
+                    }}
+                    onClick={() => handleToggleActivo(u)}
+                    disabled={u.id === user?.id}
+                  >
+                    {u.activo ? 'Activo' : 'Inactivo'}
+                  </button>
                 </div>
               </div>
             ))}
           </div>
         )}
+
+        <p className="mono" style={{ fontSize: 11, color: 'var(--ink-soft)', marginTop: 10, maxWidth: 480 }}>
+          No puedes cambiar tu propio rol ni desactivarte a ti mismo — pídele a otro admin que lo haga si
+          hace falta.
+        </p>
 
         <p className="mono" style={{ fontSize: 11.5, color: 'var(--ink-soft)', marginTop: 20, maxWidth: 480 }}>
           Para asignar empresas a un gestor, entra a la ficha de cada empresa cliente — ahí se agrega la

@@ -71,6 +71,7 @@ export const updateTramite = (id, data) =>
   request(`/tramites/${id}`, { method: 'PATCH', body: JSON.stringify(data) })
 export const deleteTramite = (id) => request(`/tramites/${id}`, { method: 'DELETE' })
 export const getAuditoriaTramite = (id) => request(`/tramites/${id}/auditoria`)
+export const getAuditoriaEmpresa = (id) => request(`/empresas/${id}/auditoria`)
 export async function importarTramitesCsv(file) {
   const token = localStorage.getItem('expediente_token')
   const formData = new FormData()
@@ -94,6 +95,8 @@ export const getGestores = () => request('/gestores')
 export const getUsuarios = () => request('/usuarios')
 export const createUsuario = (data) =>
   request('/usuarios', { method: 'POST', body: JSON.stringify(data) })
+export const updateUsuario = (id, data) =>
+  request(`/usuarios/${id}`, { method: 'PATCH', body: JSON.stringify(data) })
 export const getGestoresDeEmpresa = (empresaId) => request(`/empresas/${empresaId}/gestores`)
 export const asignarGestores = (empresaId, usuarioIds) =>
   request(`/empresas/${empresaId}/gestores`, {

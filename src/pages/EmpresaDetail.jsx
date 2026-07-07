@@ -4,15 +4,27 @@ import Sidebar from '../components/Sidebar.jsx'
 import NuevoTramiteModal from '../components/NuevoTramiteModal.jsx'
 import EditarTramiteModal from '../components/EditarTramiteModal.jsx'
 import GestoresAsignados from '../components/GestoresAsignados.jsx'
-import { getEmpresa, getTramitesDeEmpresa } from '../api.js'
+import { getEmpresa, getTramitesDeEmpresa, getAuditoriaEmpresa } from '../api.js'
 import { tagClass, categoriaLabel, formatFecha, diasRestantes, estadoUrgencia } from '../utils.js'
 import { useUser } from '../context/UserContext.jsx'
+
+const CAMPO_LABELS = {
+  numero_expediente: 'N° de expediente',
+  fecha_inicio: 'Fecha de inicio',
+  fecha_vencimiento: 'Fecha de vencimiento',
+  estado: 'Estado',
+  asignado_a: 'Asignado a',
+  notas: 'Notas',
+  eliminado: 'Trámite eliminado',
+}
 
 export default function EmpresaDetail() {
   const { id } = useParams()
   const { user } = useUser()
   const [empresa, setEmpresa] = useState(null)
   const [tramites, setTramites] = useState([])
+  const [auditoria, setAuditoria] = useState([])
+  const [mostrarHistorial, setMostrarHistorial] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [mostrarModal, setMostrarModal] = useState(false)
@@ -27,6 +39,9 @@ export default function EmpresaDetail() {
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false))
+    getAuditoriaEmpresa(id)
+      .then(setAuditoria)
+      .catch(() => setAuditoria([]))
   }
 
   useEffect(() => {
@@ -150,6 +165,43 @@ export default function EmpresaDetail() {
                 )
               })}
             </div>
+
+            <div
+              onClick={() => setMostrarHistorial(!mostrarHistorial)}
+              className="mono"
+              style={{ fontSize: 11.5, color: 'var(--ink-soft)', cursor: 'pointer', marginTop: 20 }}
+            >
+              {mostrarHistorial ? '▾' : '▸'} Historial de la empresa ({auditoria.length})
+            </div>
+
+            {mostrarHistorial && (
+              <div style={{ marginTop: 10, maxWidth: 640 }}>
+                {auditoria.length === 0 && (
+                  <p className="mono" style={{ fontSize: 12, color: 'var(--ink-soft)' }}>
+                    Sin cambios registrados todavía.
+                  </p>
+                )}
+                {auditoria.map((a, idx) => (
+                  <div key={idx} style={{ fontSize: 12.5, marginBottom: 12, paddingBottom: 12, borderBottom: '1px dashed var(--line-soft)' }}>
+                    <div>
+                      {a.campo === 'eliminado' ? (
+                        <span style={{ color: 'var(--seal-red)' }}>
+                          <strong>{a.tramite_nombre}</strong> — trámite eliminado
+                        </span>
+                      ) : (
+                        <>
+                          <strong>{a.tramite_nombre}</strong> — {CAMPO_LABELS[a.campo] || a.campo}:{' '}
+                          {a.valor_anterior || '(vacío)'} → {a.valor_nuevo || '(vacío)'}
+                        </>
+                      )}
+                    </div>
+                    <div className="mono" style={{ fontSize: 10.5, color: 'var(--ink-soft)' }}>
+                      {a.usuario_nombre || 'Alguien'} · {new Date(a.creado_en).toLocaleString('es-GT')}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </>
         )}
       </main>
