@@ -1,5 +1,5 @@
-import { useRef, useState } from 'react'
-import { updateTramite, deleteTramite } from '../api.js'
+import { useEffect, useRef, useState } from 'react'
+import { updateTramite, deleteTramite, getGestores } from '../api.js'
 import { categoriaLabel } from '../utils.js'
 import { useUser } from '../context/UserContext.jsx'
 
@@ -20,11 +20,19 @@ export default function EditarTramiteModal({ tramite, onClose, onUpdated, onDele
   const [fechaVencimiento, setFechaVencimiento] = useState(tramite.fecha_vencimiento || '')
   const [estado, setEstado] = useState(tramite.estado)
   const [checklist, setChecklist] = useState(tramite.checklist || [])
+  const [gestores, setGestores] = useState([])
+  const [asignadoA, setAsignadoA] = useState(tramite.asignado_a || '')
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [confirmarBorrado, setConfirmarBorrado] = useState(false)
   const [error, setError] = useState('')
   const enviando = useRef(false)
+
+  useEffect(() => {
+    getGestores()
+      .then(setGestores)
+      .catch(() => setGestores([]))
+  }, [])
 
   function toggleChecklistItem(idx) {
     setChecklist((prev) =>
@@ -45,6 +53,7 @@ export default function EditarTramiteModal({ tramite, onClose, onUpdated, onDele
         fecha_vencimiento: fechaVencimiento || null,
         estado,
         checklist,
+        asignado_a: asignadoA || null,
       })
       onUpdated()
     } catch (err) {
@@ -103,6 +112,18 @@ export default function EditarTramiteModal({ tramite, onClose, onUpdated, onDele
                 value={numeroExpediente}
                 onChange={(e) => setNumeroExpediente(e.target.value)}
               />
+            </div>
+
+            <div className="field">
+              <label>Asignado a</label>
+              <select value={asignadoA} onChange={(e) => setAsignadoA(e.target.value)}>
+                <option value="">Sin asignar</option>
+                {gestores.map((g) => (
+                  <option key={g.id} value={g.id}>
+                    {g.nombre} ({g.rol})
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div style={{ display: 'flex', gap: 12 }}>

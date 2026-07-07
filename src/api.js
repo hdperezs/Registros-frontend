@@ -74,6 +74,7 @@ export const updateEmpresa = (id, data) =>
   request(`/empresas/${id}`, { method: 'PATCH', body: JSON.stringify(data) })
 export const getDashboardResumen = (gestorId = '') =>
   request(`/dashboard/resumen${gestorId ? `?gestor_id=${gestorId}` : ''}`)
+export const getGestores = () => request('/gestores')
 export const getUsuarios = () => request('/usuarios')
 export const createUsuario = (data) =>
   request('/usuarios', { method: 'POST', body: JSON.stringify(data) })

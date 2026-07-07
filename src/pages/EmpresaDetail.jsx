@@ -100,7 +100,7 @@ export default function EmpresaDetail() {
                 <span>TRÁMITE</span>
                 <span>CATEGORÍA</span>
                 <span>ESTADO</span>
-                <span>CREADO POR</span>
+                <span>ASIGNADO A</span>
               </div>
 
               {tramites.length === 0 && (
@@ -138,8 +138,13 @@ export default function EmpresaDetail() {
                         </span>
                       )}
                     </div>
-                    <div className="mono" style={{ fontSize: 12, color: 'var(--ink-soft)' }}>
-                      {t.creado_por_nombre || '—'}
+                    <div className="mono" style={{ fontSize: 12 }}>
+                      <div style={{ color: t.asignado_a_nombre ? 'var(--ink)' : 'var(--ink-soft)' }}>
+                        {t.asignado_a_nombre || 'Sin asignar'}
+                      </div>
+                      {t.creado_por_nombre && (
+                        <div className="co-sub">creado por {t.creado_por_nombre}</div>
+                      )}
                     </div>
                   </div>
                 )

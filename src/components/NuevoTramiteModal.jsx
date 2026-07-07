@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { getTiposTramite, createTramite } from '../api.js'
+import { getTiposTramite, createTramite, getGestores } from '../api.js'
 import { categoriaLabel } from '../utils.js'
 
 const CATEGORIAS = ['ambiente', 'farma', 'alimentos', 'sso', 'otros']
@@ -11,9 +11,17 @@ export default function NuevoTramiteModal({ empresaId, onClose, onCreated }) {
   const [fechaInicio, setFechaInicio] = useState(new Date().toISOString().slice(0, 10))
   const [numeroExpediente, setNumeroExpediente] = useState('')
   const [notas, setNotas] = useState('')
+  const [gestores, setGestores] = useState([])
+  const [asignadoA, setAsignadoA] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const enviando = useRef(false)
+
+  useEffect(() => {
+    getGestores()
+      .then(setGestores)
+      .catch(() => setGestores([]))
+  }, [])
 
   useEffect(() => {
     getTiposTramite(categoria)
@@ -45,6 +53,7 @@ export default function NuevoTramiteModal({ empresaId, onClose, onCreated }) {
         fecha_inicio: fechaInicio,
         numero_expediente: numeroExpediente || null,
         notas: notas || null,
+        asignado_a: asignadoA || null,
       })
       onCreated()
     } catch (err) {
@@ -104,6 +113,18 @@ export default function NuevoTramiteModal({ empresaId, onClose, onCreated }) {
                 onChange={(e) => setNumeroExpediente(e.target.value)}
                 placeholder="DRCA-XXXX-2026"
               />
+            </div>
+
+            <div className="field">
+              <label>Asignado a (opcional)</label>
+              <select value={asignadoA} onChange={(e) => setAsignadoA(e.target.value)}>
+                <option value="">Sin asignar</option>
+                {gestores.map((g) => (
+                  <option key={g.id} value={g.id}>
+                    {g.nombre} ({g.rol})
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className="field">

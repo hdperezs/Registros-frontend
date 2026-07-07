@@ -275,7 +275,7 @@ export default function Dashboard() {
                     <span className={`days ${urgencia.clase}`}>{urgencia.texto}</span>
                   </div>
                   <div className="mono" style={{ fontSize: 12, color: 'var(--ink-soft)' }}>
-                    {t.creado_por_nombre || '—'}
+                    {t.asignado_a_nombre || <span style={{ color: 'var(--ink-soft)' }}>Sin asignar</span>}
                   </div>
                 </Link>
               )
