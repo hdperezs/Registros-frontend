@@ -4,6 +4,7 @@ import Dashboard from './pages/Dashboard.jsx'
 import Empresas from './pages/Empresas.jsx'
 import EmpresaDetail from './pages/EmpresaDetail.jsx'
 import Usuarios from './pages/Usuarios.jsx'
+import Importar from './pages/Importar.jsx'
 import { isAuthenticated } from './api.js'
 import { UserProvider } from './context/UserContext.jsx'
 
@@ -45,6 +46,14 @@ export default function App() {
         element={
           <Protected>
             <Usuarios />
+          </Protected>
+        }
+      />
+      <Route
+        path="/importar"
+        element={
+          <Protected>
+            <Importar />
           </Protected>
         }
       />

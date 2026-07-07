@@ -70,6 +70,22 @@ export const getTramitesDeEmpresa = (id) => request(`/empresas/${id}/tramites`)
 export const updateTramite = (id, data) =>
   request(`/tramites/${id}`, { method: 'PATCH', body: JSON.stringify(data) })
 export const deleteTramite = (id) => request(`/tramites/${id}`, { method: 'DELETE' })
+export const getAuditoriaTramite = (id) => request(`/tramites/${id}/auditoria`)
+export async function importarTramitesCsv(file) {
+  const token = localStorage.getItem('expediente_token')
+  const formData = new FormData()
+  formData.append('archivo', file)
+  const res = await fetch(`${API_URL}/tramites/importar-csv`, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: formData,
+  })
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: 'Error al importar' }))
+    throw new Error(typeof err.detail === 'string' ? err.detail : 'Error al importar')
+  }
+  return res.json()
+}
 export const updateEmpresa = (id, data) =>
   request(`/empresas/${id}`, { method: 'PATCH', body: JSON.stringify(data) })
 export const getDashboardResumen = (gestorId = '') =>

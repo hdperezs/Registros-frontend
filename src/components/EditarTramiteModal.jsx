@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { updateTramite, deleteTramite, getGestores } from '../api.js'
+import { updateTramite, deleteTramite, getGestores, getAuditoriaTramite } from '../api.js'
 import { categoriaLabel } from '../utils.js'
 import { useUser } from '../context/UserContext.jsx'
 
@@ -13,6 +13,21 @@ const ESTADO_LABELS = {
   renovacion_en_curso: 'Renovación en curso',
 }
 
+const CAMPO_LABELS = {
+  numero_expediente: 'N° de expediente',
+  fecha_inicio: 'Fecha de inicio',
+  fecha_vencimiento: 'Fecha de vencimiento',
+  estado: 'Estado',
+  asignado_a: 'Asignado a',
+  notas: 'Notas',
+}
+
+function formatearValorAuditoria(campo, valor) {
+  if (!valor || valor === 'None') return '(vacío)'
+  if (campo === 'estado') return ESTADO_LABELS[valor] || valor
+  return valor
+}
+
 export default function EditarTramiteModal({ tramite, onClose, onUpdated, onDeleted }) {
   const { user } = useUser()
   const [numeroExpediente, setNumeroExpediente] = useState(tramite.numero_expediente || '')
@@ -22,6 +37,8 @@ export default function EditarTramiteModal({ tramite, onClose, onUpdated, onDele
   const [checklist, setChecklist] = useState(tramite.checklist || [])
   const [gestores, setGestores] = useState([])
   const [asignadoA, setAsignadoA] = useState(tramite.asignado_a || '')
+  const [auditoria, setAuditoria] = useState([])
+  const [mostrarHistorial, setMostrarHistorial] = useState(false)
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [confirmarBorrado, setConfirmarBorrado] = useState(false)
@@ -32,7 +49,10 @@ export default function EditarTramiteModal({ tramite, onClose, onUpdated, onDele
     getGestores()
       .then(setGestores)
       .catch(() => setGestores([]))
-  }, [])
+    getAuditoriaTramite(tramite.id)
+      .then(setAuditoria)
+      .catch(() => setAuditoria([]))
+  }, [tramite.id])
 
   function toggleChecklistItem(idx) {
     setChecklist((prev) =>
@@ -156,6 +176,36 @@ export default function EditarTramiteModal({ tramite, onClose, onUpdated, onDele
                     </div>
                   ))}
                 </div>
+              </div>
+            )}
+
+            <div
+              onClick={() => setMostrarHistorial(!mostrarHistorial)}
+              className="mono"
+              style={{ fontSize: 11.5, color: 'var(--ink-soft)', cursor: 'pointer', marginTop: 4 }}
+            >
+              {mostrarHistorial ? '▾' : '▸'} Historial de cambios ({auditoria.length})
+            </div>
+
+            {mostrarHistorial && (
+              <div style={{ marginTop: 10, borderTop: '1px dashed var(--line-soft)', paddingTop: 10 }}>
+                {auditoria.length === 0 && (
+                  <p className="mono" style={{ fontSize: 12, color: 'var(--ink-soft)' }}>
+                    Sin cambios registrados todavía.
+                  </p>
+                )}
+                {auditoria.map((a, idx) => (
+                  <div key={idx} style={{ fontSize: 12.5, marginBottom: 10 }}>
+                    <div>
+                      <strong>{CAMPO_LABELS[a.campo] || a.campo}</strong>:{' '}
+                      {formatearValorAuditoria(a.campo, a.valor_anterior)} →{' '}
+                      {formatearValorAuditoria(a.campo, a.valor_nuevo)}
+                    </div>
+                    <div className="mono" style={{ fontSize: 10.5, color: 'var(--ink-soft)' }}>
+                      {a.usuario_nombre || 'Alguien'} · {new Date(a.creado_en).toLocaleString('es-GT')}
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>

@@ -1,10 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
-import { getTiposTramite, createTramite, getGestores } from '../api.js'
+import { getTiposTramite, createTramite, getGestores, getEmpresas } from '../api.js'
 import { categoriaLabel } from '../utils.js'
 
 const CATEGORIAS = ['ambiente', 'farma', 'alimentos', 'sso', 'otros']
 
-export default function NuevoTramiteModal({ empresaId, onClose, onCreated }) {
+export default function NuevoTramiteModal({ empresaId = null, onClose, onCreated }) {
+  const [empresaSeleccionada, setEmpresaSeleccionada] = useState(
+    empresaId ? { id: empresaId } : null
+  )
+  const [busquedaEmpresa, setBusquedaEmpresa] = useState('')
+  const [resultadosEmpresa, setResultadosEmpresa] = useState([])
   const [categoria, setCategoria] = useState('alimentos')
   const [tipos, setTipos] = useState([])
   const [tipoId, setTipoId] = useState('')
@@ -32,6 +37,19 @@ export default function NuevoTramiteModal({ empresaId, onClose, onCreated }) {
       .catch(() => setTipos([]))
   }, [categoria])
 
+  useEffect(() => {
+    if (empresaId || !busquedaEmpresa.trim()) {
+      setResultadosEmpresa([])
+      return
+    }
+    const timeout = setTimeout(() => {
+      getEmpresas(busquedaEmpresa)
+        .then(setResultadosEmpresa)
+        .catch(() => setResultadosEmpresa([]))
+    }, 300)
+    return () => clearTimeout(timeout)
+  }, [busquedaEmpresa, empresaId])
+
   const tipoSeleccionado = tipos.find((t) => t.id === tipoId)
 
   async function handleSubmit(e) {
@@ -40,6 +58,11 @@ export default function NuevoTramiteModal({ empresaId, onClose, onCreated }) {
     enviando.current = true
 
     setError('')
+    if (!empresaSeleccionada) {
+      setError('Selecciona una empresa')
+      enviando.current = false
+      return
+    }
     if (!tipoId) {
       setError('Selecciona un tipo de trámite')
       enviando.current = false
@@ -48,7 +71,7 @@ export default function NuevoTramiteModal({ empresaId, onClose, onCreated }) {
     setSaving(true)
     try {
       await createTramite({
-        empresa_cliente_id: empresaId,
+        empresa_cliente_id: empresaSeleccionada.id,
         tipo_tramite_id: tipoId,
         fecha_inicio: fechaInicio,
         numero_expediente: numeroExpediente || null,
@@ -77,6 +100,77 @@ export default function NuevoTramiteModal({ empresaId, onClose, onCreated }) {
         <form onSubmit={handleSubmit}>
           <div className="modal-body">
             {error && <div className="error-msg">{error}</div>}
+
+            {!empresaId && (
+              <div className="field" style={{ position: 'relative' }}>
+                <label>Empresa cliente</label>
+                {empresaSeleccionada ? (
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      border: '1px solid var(--line)',
+                      borderRadius: 2,
+                      padding: '9px 12px',
+                      background: 'var(--paper)',
+                    }}
+                  >
+                    <span style={{ fontSize: 13.5 }}>{empresaSeleccionada.nombre}</span>
+                    <button
+                      type="button"
+                      className="btn-ghost"
+                      style={{ padding: '4px 10px', fontSize: 11 }}
+                      onClick={() => {
+                        setEmpresaSeleccionada(null)
+                        setBusquedaEmpresa('')
+                      }}
+                    >
+                      Cambiar
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <input
+                      type="text"
+                      placeholder="Buscar empresa..."
+                      value={busquedaEmpresa}
+                      onChange={(e) => setBusquedaEmpresa(e.target.value)}
+                      autoFocus
+                    />
+                    {resultadosEmpresa.length > 0 && (
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: '100%',
+                          left: 0,
+                          right: 0,
+                          background: 'var(--paper-card)',
+                          border: '1px solid var(--line)',
+                          borderRadius: 3,
+                          zIndex: 10,
+                          maxHeight: 200,
+                          overflowY: 'auto',
+                        }}
+                      >
+                        {resultadosEmpresa.map((e) => (
+                          <div
+                            key={e.id}
+                            onClick={() => {
+                              setEmpresaSeleccionada(e)
+                              setResultadosEmpresa([])
+                            }}
+                            style={{ padding: '9px 12px', fontSize: 13, cursor: 'pointer', borderBottom: '1px solid var(--line-soft)' }}
+                          >
+                            {e.nombre}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
 
             <div className="field">
               <label>Categoría</label>

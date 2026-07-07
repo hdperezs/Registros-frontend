@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Sidebar from '../components/Sidebar.jsx'
 import NuevaEmpresaModal from '../components/NuevaEmpresaModal.jsx'
+import NuevoTramiteModal from '../components/NuevoTramiteModal.jsx'
 import { getProximosVencer, getEmpresas, getDashboardResumen, getUsuarios, buscarTramites } from '../api.js'
 import { tagClass, categoriaLabel, diasRestantes, estadoUrgencia, formatFecha } from '../utils.js'
 import { useUser } from '../context/UserContext.jsx'
@@ -30,6 +31,7 @@ export default function Dashboard() {
   const [expedientesResultado, setExpedientesResultado] = useState([])
   const [buscando, setBuscando] = useState(false)
   const [mostrarModal, setMostrarModal] = useState(false)
+  const [mostrarModalTramite, setMostrarModalTramite] = useState(false)
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -40,7 +42,7 @@ export default function Dashboard() {
     }
   }, [user])
 
-  useEffect(() => {
+  function cargarDashboard() {
     setLoading(true)
     Promise.all([getProximosVencer(ventana, gestorId), getDashboardResumen(gestorId)])
       .then(([t, r]) => {
@@ -49,6 +51,11 @@ export default function Dashboard() {
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false))
+  }
+
+  useEffect(() => {
+    cargarDashboard()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ventana, gestorId])
 
   useEffect(() => {
@@ -168,6 +175,9 @@ export default function Dashboard() {
                 </div>
               )}
             </div>
+            <button className="btn-primary" onClick={() => setMostrarModalTramite(true)}>
+              + Nuevo trámite
+            </button>
             {user?.rol === 'admin' && (
               <button className="btn-primary" onClick={() => setMostrarModal(true)}>
                 + Nueva empresa
@@ -290,6 +300,16 @@ export default function Dashboard() {
           onCreated={(empresa) => {
             setMostrarModal(false)
             navigate(`/empresas/${empresa.id}`)
+          }}
+        />
+      )}
+
+      {mostrarModalTramite && (
+        <NuevoTramiteModal
+          onClose={() => setMostrarModalTramite(false)}
+          onCreated={() => {
+            setMostrarModalTramite(false)
+            cargarDashboard()
           }}
         />
       )}

@@ -40,6 +40,15 @@ export default function Sidebar({ active }) {
             Usuarios
           </div>
         )}
+        {user?.rol === 'admin' && (
+          <div
+            className="nav-item"
+            style={active === 'importar' ? { background: 'rgba(255,255,255,0.06)', color: '#f2f5ef' } : {}}
+            onClick={() => navigate('/importar')}
+          >
+            Importar
+          </div>
+        )}
       </div>
       <div className="nav-user">
         {user && (
