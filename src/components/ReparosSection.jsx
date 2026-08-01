@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import { createReparo, updateReparo, deleteReparo } from '../api.js'
 import { useUser } from '../context/UserContext.jsx'
+import { sumarMeses } from '../utils.js'
 
 function ReparoCard({ reparo, tramiteId, onChange }) {
   const { user } = useUser()
   const [fechaEmision, setFechaEmision] = useState(reparo.fecha_emision || '')
   const [motivo, setMotivo] = useState(reparo.motivo_rechazo || '')
   const [fechaVencimiento, setFechaVencimiento] = useState(reparo.fecha_vencimiento || '')
+  const [vencimientoManual, setVencimientoManual] = useState(!!reparo.fecha_vencimiento)
   const [pasoFirma, setPasoFirma] = useState(reparo.fecha_paso_firma_respuesta || '')
   const [salidaMensajeria, setSalidaMensajeria] = useState(reparo.fecha_salida_mensajeria_respuesta || '')
   const [ingreso, setIngreso] = useState(reparo.fecha_ingreso_respuesta || '')
@@ -76,13 +78,35 @@ function ReparoCard({ reparo, tramiteId, onChange }) {
       <div style={{ display: 'flex', gap: 10, marginBottom: 10 }}>
         <div className="field" style={{ flex: 1, marginBottom: 0 }}>
           <label>Fecha de emisión</label>
-          <input type="date" value={fechaEmision} onChange={(e) => setFechaEmision(e.target.value)} />
+          <input
+            type="date"
+            value={fechaEmision}
+            onChange={(e) => {
+              const nuevaFecha = e.target.value
+              setFechaEmision(nuevaFecha)
+              if (!vencimientoManual) {
+                setFechaVencimiento(sumarMeses(nuevaFecha, 3))
+              }
+            }}
+          />
         </div>
         <div className="field" style={{ flex: 1, marginBottom: 0 }}>
           <label>Vence (responder)</label>
-          <input type="date" value={fechaVencimiento} onChange={(e) => setFechaVencimiento(e.target.value)} />
+          <input
+            type="date"
+            value={fechaVencimiento}
+            onChange={(e) => {
+              setVencimientoManual(true)
+              setFechaVencimiento(e.target.value)
+            }}
+          />
         </div>
       </div>
+      {!vencimientoManual && fechaEmision && (
+        <p className="mono" style={{ fontSize: 10.5, color: 'var(--seal-green)', margin: '-6px 0 10px' }}>
+          Calculado automáticamente: 3 meses desde la emisión
+        </p>
+      )}
 
       <div className="field" style={{ marginBottom: 10 }}>
         <label>Motivo del rechazo</label>

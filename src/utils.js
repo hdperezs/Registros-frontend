@@ -42,3 +42,15 @@ export function formatFecha(fecha) {
   const d = new Date(fecha + 'T00:00:00')
   return d.toLocaleDateString('es-GT', { day: '2-digit', month: 'short', year: 'numeric' })
 }
+
+export function sumarMeses(fechaISO, meses) {
+  if (!fechaISO) return ''
+  const [anio, mes, dia] = fechaISO.split('-').map(Number)
+  const fecha = new Date(anio, mes - 1 + meses, 1)
+  const ultimoDiaMesDestino = new Date(fecha.getFullYear(), fecha.getMonth() + 1, 0).getDate()
+  fecha.setDate(Math.min(dia, ultimoDiaMesDestino))
+  const yyyy = fecha.getFullYear()
+  const mm = String(fecha.getMonth() + 1).padStart(2, '0')
+  const dd = String(fecha.getDate()).padStart(2, '0')
+  return `${yyyy}-${mm}-${dd}`
+}
