@@ -2,8 +2,19 @@ import { useEffect, useRef, useState } from 'react'
 import { updateTramite, deleteTramite, getGestores, getAuditoriaTramite } from '../api.js'
 import { categoriaLabel } from '../utils.js'
 import { useUser } from '../context/UserContext.jsx'
+import ReparosSection from './ReparosSection.jsx'
+
+const CATEGORIAS_CON_REPARO = ['alimentos', 'farma', 'otros']
 
 const ESTADOS = ['en_tramite', 'vigente', 'por_vencer', 'vencido', 'renovacion_en_curso']
+
+const RESOLUCIONES = ['aprobado', 'baja', 'finalizado', 'pendiente']
+const RESOLUCION_LABELS = {
+  aprobado: 'Aprobado',
+  baja: 'Baja',
+  finalizado: 'Finalizado',
+  pendiente: 'Pendiente',
+}
 
 const ESTADO_LABELS = {
   en_tramite: 'En trámite',
@@ -20,6 +31,14 @@ const CAMPO_LABELS = {
   estado: 'Estado',
   asignado_a: 'Asignado a',
   notas: 'Notas',
+  fecha_paso_firma: 'Paso a firma',
+  fecha_salida_mensajeria: 'Salida a mensajería',
+  fecha_ingreso: 'Ingreso al ministerio',
+  resolucion_final: 'Resolución final',
+  reparo_1: 'Reparo N° 1',
+  reparo_2: 'Reparo N° 2',
+  reparo_3: 'Reparo N° 3',
+  eliminado: 'Trámite eliminado',
 }
 
 function formatearValorAuditoria(campo, valor) {
@@ -28,8 +47,9 @@ function formatearValorAuditoria(campo, valor) {
   return valor
 }
 
-export default function EditarTramiteModal({ tramite, onClose, onUpdated, onDeleted }) {
+export default function EditarTramiteModal({ tramite: tramiteInicial, onClose, onUpdated, onDeleted }) {
   const { user } = useUser()
+  const [tramite, setTramite] = useState(tramiteInicial)
   const [numeroExpediente, setNumeroExpediente] = useState(tramite.numero_expediente || '')
   const [fechaInicio, setFechaInicio] = useState(tramite.fecha_inicio)
   const [fechaVencimiento, setFechaVencimiento] = useState(tramite.fecha_vencimiento || '')
@@ -37,6 +57,10 @@ export default function EditarTramiteModal({ tramite, onClose, onUpdated, onDele
   const [checklist, setChecklist] = useState(tramite.checklist || [])
   const [gestores, setGestores] = useState([])
   const [asignadoA, setAsignadoA] = useState(tramite.asignado_a || '')
+  const [fechaPasoFirma, setFechaPasoFirma] = useState(tramite.fecha_paso_firma || '')
+  const [fechaSalidaMensajeria, setFechaSalidaMensajeria] = useState(tramite.fecha_salida_mensajeria || '')
+  const [fechaIngreso, setFechaIngreso] = useState(tramite.fecha_ingreso || '')
+  const [resolucionFinal, setResolucionFinal] = useState(tramite.resolucion_final || '')
   const [auditoria, setAuditoria] = useState([])
   const [mostrarHistorial, setMostrarHistorial] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -44,6 +68,8 @@ export default function EditarTramiteModal({ tramite, onClose, onUpdated, onDele
   const [confirmarBorrado, setConfirmarBorrado] = useState(false)
   const [error, setError] = useState('')
   const enviando = useRef(false)
+
+  const tieneReparos = CATEGORIAS_CON_REPARO.includes(tramite.categoria)
 
   useEffect(() => {
     getGestores()
@@ -67,14 +93,19 @@ export default function EditarTramiteModal({ tramite, onClose, onUpdated, onDele
     setError('')
     setSaving(true)
     try {
-      await updateTramite(tramite.id, {
+      const actualizado = await updateTramite(tramite.id, {
         numero_expediente: numeroExpediente || null,
         fecha_inicio: fechaInicio,
         fecha_vencimiento: fechaVencimiento || null,
         estado,
         checklist,
         asignado_a: asignadoA || null,
+        fecha_paso_firma: fechaPasoFirma || null,
+        fecha_salida_mensajeria: fechaSalidaMensajeria || null,
+        fecha_ingreso: fechaIngreso || null,
+        resolucion_final: resolucionFinal || null,
       })
+      setTramite(actualizado)
       onUpdated()
     } catch (err) {
       setError(err.message || 'No se pudo actualizar el trámite')
@@ -160,6 +191,46 @@ export default function EditarTramiteModal({ tramite, onClose, onUpdated, onDele
                 />
               </div>
             </div>
+
+            {tieneReparos && (
+              <>
+                <div className="mono" style={{ fontSize: 10.5, color: 'var(--ink-soft)', marginBottom: 6, letterSpacing: '0.04em' }}>
+                  FLUJO DEL EXPEDIENTE
+                </div>
+                <div style={{ display: 'flex', gap: 10, marginBottom: 4 }}>
+                  <div className="field" style={{ flex: 1 }}>
+                    <label>Paso a firma</label>
+                    <input type="date" value={fechaPasoFirma} onChange={(e) => setFechaPasoFirma(e.target.value)} />
+                  </div>
+                  <div className="field" style={{ flex: 1 }}>
+                    <label>Salida a mensajería</label>
+                    <input
+                      type="date"
+                      value={fechaSalidaMensajeria}
+                      onChange={(e) => setFechaSalidaMensajeria(e.target.value)}
+                    />
+                  </div>
+                  <div className="field" style={{ flex: 1 }}>
+                    <label>Ingreso al ministerio</label>
+                    <input type="date" value={fechaIngreso} onChange={(e) => setFechaIngreso(e.target.value)} />
+                  </div>
+                </div>
+
+                <div className="field">
+                  <label>Resolución final</label>
+                  <select value={resolucionFinal} onChange={(e) => setResolucionFinal(e.target.value)}>
+                    <option value="">Sin resolución todavía</option>
+                    {RESOLUCIONES.map((r) => (
+                      <option key={r} value={r}>
+                        {RESOLUCION_LABELS[r]}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <ReparosSection tramite={tramite} onChange={(actualizado) => setTramite(actualizado)} />
+              </>
+            )}
 
             {checklist.length > 0 && (
               <div className="field">

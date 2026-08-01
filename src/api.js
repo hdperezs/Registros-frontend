@@ -72,6 +72,11 @@ export const updateTramite = (id, data) =>
 export const deleteTramite = (id) => request(`/tramites/${id}`, { method: 'DELETE' })
 export const getAuditoriaTramite = (id) => request(`/tramites/${id}/auditoria`)
 export const getAuditoriaEmpresa = (id) => request(`/empresas/${id}/auditoria`)
+export const createReparo = (tramiteId, data) =>
+  request(`/tramites/${tramiteId}/reparos`, { method: 'POST', body: JSON.stringify(data) })
+export const updateReparo = (id, data) =>
+  request(`/reparos/${id}`, { method: 'PATCH', body: JSON.stringify(data) })
+export const deleteReparo = (id) => request(`/reparos/${id}`, { method: 'DELETE' })
 export async function importarTramitesCsv(file) {
   const token = localStorage.getItem('expediente_token')
   const formData = new FormData()
