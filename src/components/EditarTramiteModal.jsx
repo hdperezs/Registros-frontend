@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { updateTramite, deleteTramite, getGestores, getAuditoriaTramite } from '../api.js'
-import { categoriaLabel } from '../utils.js'
+import { categoriaLabel, sumarMeses } from '../utils.js'
 import { useUser } from '../context/UserContext.jsx'
 import ReparosSection from './ReparosSection.jsx'
 
@@ -41,6 +41,8 @@ const CAMPO_LABELS = {
   fecha_retiro_licencia: 'Retiro de licencia ambiental',
   anticipo: 'Anticipo',
   complemento: 'Complemento',
+  fecha_emision_licencia: 'Fecha de emisión de licencia',
+  anios_licencia: 'Años pagados',
   reparo_1: 'Reparo N° 1',
   reparo_2: 'Reparo N° 2',
   reparo_3: 'Reparo N° 3',
@@ -73,6 +75,9 @@ export default function EditarTramiteModal({ tramite: tramiteInicial, onClose, o
   const [fechaRetiroLicencia, setFechaRetiroLicencia] = useState(tramite.fecha_retiro_licencia || '')
   const [anticipo, setAnticipo] = useState(tramite.anticipo || '')
   const [complemento, setComplemento] = useState(tramite.complemento || '')
+  const [fechaEmisionLicencia, setFechaEmisionLicencia] = useState(tramite.fecha_emision_licencia || '')
+  const [aniosLicencia, setAniosLicencia] = useState(tramite.anios_licencia || '')
+  const [vencimientoManualAmbiente, setVencimientoManualAmbiente] = useState(!!tramite.fecha_vencimiento)
   const [auditoria, setAuditoria] = useState([])
   const [mostrarHistorial, setMostrarHistorial] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -123,6 +128,8 @@ export default function EditarTramiteModal({ tramite: tramiteInicial, onClose, o
         fecha_retiro_licencia: fechaRetiroLicencia || null,
         anticipo: anticipo || null,
         complemento: complemento || null,
+        fecha_emision_licencia: fechaEmisionLicencia || null,
+        anios_licencia: aniosLicencia ? Number(aniosLicencia) : null,
       })
       setTramite(actualizado)
       onUpdated()
@@ -206,7 +213,10 @@ export default function EditarTramiteModal({ tramite: tramiteInicial, onClose, o
                 <input
                   type="date"
                   value={fechaVencimiento}
-                  onChange={(e) => setFechaVencimiento(e.target.value)}
+                  onChange={(e) => {
+                    setVencimientoManualAmbiente(true)
+                    setFechaVencimiento(e.target.value)
+                  }}
                 />
               </div>
             </div>
@@ -253,6 +263,51 @@ export default function EditarTramiteModal({ tramite: tramiteInicial, onClose, o
 
             {esAmbiente && (
               <>
+                <div className="mono" style={{ fontSize: 10.5, color: 'var(--ink-soft)', marginBottom: 6, letterSpacing: '0.04em' }}>
+                  VIGENCIA DE LA LICENCIA
+                </div>
+                <div style={{ display: 'flex', gap: 10, marginBottom: 4 }}>
+                  <div className="field" style={{ flex: 1 }}>
+                    <label>Fecha de emisión de licencia</label>
+                    <input
+                      type="date"
+                      value={fechaEmisionLicencia}
+                      onChange={(e) => {
+                        const nuevaFecha = e.target.value
+                        setFechaEmisionLicencia(nuevaFecha)
+                        if (!vencimientoManualAmbiente && nuevaFecha && aniosLicencia) {
+                          setFechaVencimiento(sumarMeses(nuevaFecha, Number(aniosLicencia) * 12))
+                        }
+                      }}
+                    />
+                  </div>
+                  <div className="field" style={{ flex: 1 }}>
+                    <label>Años pagados</label>
+                    <select
+                      value={aniosLicencia}
+                      onChange={(e) => {
+                        const nuevosAnios = e.target.value
+                        setAniosLicencia(nuevosAnios)
+                        if (!vencimientoManualAmbiente && fechaEmisionLicencia && nuevosAnios) {
+                          setFechaVencimiento(sumarMeses(fechaEmisionLicencia, Number(nuevosAnios) * 12))
+                        }
+                      }}
+                    >
+                      <option value="">Selecciona...</option>
+                      <option value="1">1 año</option>
+                      <option value="2">2 años</option>
+                      <option value="3">3 años</option>
+                      <option value="4">4 años</option>
+                      <option value="5">5 años</option>
+                    </select>
+                  </div>
+                </div>
+                {!vencimientoManualAmbiente && fechaEmisionLicencia && aniosLicencia && (
+                  <p className="mono" style={{ fontSize: 10.5, color: 'var(--seal-green)', margin: '-6px 0 10px' }}>
+                    Vencimiento calculado automáticamente arriba, en "Fecha de vencimiento"
+                  </p>
+                )}
+
                 <div className="mono" style={{ fontSize: 10.5, color: 'var(--ink-soft)', marginBottom: 6, letterSpacing: '0.04em' }}>
                   FLUJO DEL INSTRUMENTO/LICENCIA (MARN)
                 </div>
