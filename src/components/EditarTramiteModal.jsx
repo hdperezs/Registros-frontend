@@ -39,6 +39,8 @@ const CAMPO_LABELS = {
   fecha_resolucion_aprobatoria: 'Resolución aprobatoria',
   fecha_presentacion_solicitud: 'Presentación de solicitud de licencia',
   fecha_retiro_licencia: 'Retiro de licencia ambiental',
+  anticipo: 'Anticipo',
+  complemento: 'Complemento',
   reparo_1: 'Reparo N° 1',
   reparo_2: 'Reparo N° 2',
   reparo_3: 'Reparo N° 3',
@@ -69,6 +71,8 @@ export default function EditarTramiteModal({ tramite: tramiteInicial, onClose, o
   const [fechaResolucionAprobatoria, setFechaResolucionAprobatoria] = useState(tramite.fecha_resolucion_aprobatoria || '')
   const [fechaPresentacionSolicitud, setFechaPresentacionSolicitud] = useState(tramite.fecha_presentacion_solicitud || '')
   const [fechaRetiroLicencia, setFechaRetiroLicencia] = useState(tramite.fecha_retiro_licencia || '')
+  const [anticipo, setAnticipo] = useState(tramite.anticipo || '')
+  const [complemento, setComplemento] = useState(tramite.complemento || '')
   const [auditoria, setAuditoria] = useState([])
   const [mostrarHistorial, setMostrarHistorial] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -117,6 +121,8 @@ export default function EditarTramiteModal({ tramite: tramiteInicial, onClose, o
         fecha_resolucion_aprobatoria: fechaResolucionAprobatoria || null,
         fecha_presentacion_solicitud: fechaPresentacionSolicitud || null,
         fecha_retiro_licencia: fechaRetiroLicencia || null,
+        anticipo: anticipo || null,
+        complemento: complemento || null,
       })
       setTramite(actualizado)
       onUpdated()
@@ -291,6 +297,32 @@ export default function EditarTramiteModal({ tramite: tramiteInicial, onClose, o
                 </p>
               </>
             )}
+
+            <div className="mono" style={{ fontSize: 10.5, color: 'var(--ink-soft)', marginBottom: 6, letterSpacing: '0.04em' }}>
+              PAGOS
+            </div>
+            <div style={{ display: 'flex', gap: 10, marginBottom: 4 }}>
+              <div className="field" style={{ flex: 1 }}>
+                <label>Anticipo</label>
+                <textarea
+                  rows={2}
+                  value={anticipo}
+                  onChange={(e) => setAnticipo(e.target.value)}
+                  style={{ resize: 'none' }}
+                  placeholder="Ej. Q3495, depósito 138871"
+                />
+              </div>
+              <div className="field" style={{ flex: 1 }}>
+                <label>Complemento</label>
+                <textarea
+                  rows={2}
+                  value={complemento}
+                  onChange={(e) => setComplemento(e.target.value)}
+                  style={{ resize: 'none' }}
+                  placeholder="Ej. Saldo Q1945, pendiente de cobro"
+                />
+              </div>
+            </div>
 
             {checklist.length > 0 && (
               <div className="field">
