@@ -72,6 +72,24 @@ export const updateTramite = (id, data) =>
 export const deleteTramite = (id) => request(`/tramites/${id}`, { method: 'DELETE' })
 export const getAuditoriaTramite = (id) => request(`/tramites/${id}/auditoria`)
 export const getAuditoriaEmpresa = (id) => request(`/empresas/${id}/auditoria`)
+export async function subirDocumento(tramiteId, tipo, archivo, reparoId = null) {
+  const token = localStorage.getItem('expediente_token')
+  const formData = new FormData()
+  formData.append('archivo', archivo)
+  let url = `${API_URL}/tramites/${tramiteId}/documentos?tipo=${encodeURIComponent(tipo)}`
+  if (reparoId) url += `&reparo_id=${encodeURIComponent(reparoId)}`
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: formData,
+  })
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: 'Error al subir el archivo' }))
+    throw new Error(typeof err.detail === 'string' ? err.detail : 'Error al subir el archivo')
+  }
+  return res.json()
+}
+export const borrarDocumento = (id) => request(`/documentos/${id}`, { method: 'DELETE' })
 export const createReparo = (tramiteId, data) =>
   request(`/tramites/${tramiteId}/reparos`, { method: 'POST', body: JSON.stringify(data) })
 export const updateReparo = (id, data) =>

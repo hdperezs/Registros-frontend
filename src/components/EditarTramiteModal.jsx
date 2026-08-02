@@ -3,6 +3,7 @@ import { updateTramite, deleteTramite, getGestores, getAuditoriaTramite } from '
 import { categoriaLabel, sumarMeses } from '../utils.js'
 import { useUser } from '../context/UserContext.jsx'
 import ReparosSection from './ReparosSection.jsx'
+import DocumentosSection from './DocumentosSection.jsx'
 
 const CATEGORIAS_CON_REPARO = ['alimentos', 'farma', 'otros']
 
@@ -375,6 +376,28 @@ export default function EditarTramiteModal({ tramite: tramiteInicial, onClose, o
                   onChange={(e) => setComplemento(e.target.value)}
                   style={{ resize: 'none' }}
                   placeholder="Ej. Saldo Q1945, pendiente de cobro"
+                />
+              </div>
+            </div>
+
+            <div className="mono" style={{ fontSize: 10.5, color: 'var(--ink-soft)', marginBottom: 6, letterSpacing: '0.04em' }}>
+              DOCUMENTOS
+            </div>
+            <div style={{ display: 'flex', gap: 10, marginBottom: 4 }}>
+              <div style={{ flex: 1 }}>
+                <DocumentosSection
+                  tramite={tramite}
+                  tipo="contrasena"
+                  label="Contraseña (recibo de ingreso)"
+                  onChange={(actualizado) => setTramite(actualizado)}
+                />
+              </div>
+              <div style={{ flex: 1 }}>
+                <DocumentosSection
+                  tramite={tramite}
+                  tipo="licencia"
+                  label="Licencia / resolución aprobada"
+                  onChange={(actualizado) => setTramite(actualizado)}
                 />
               </div>
             </div>

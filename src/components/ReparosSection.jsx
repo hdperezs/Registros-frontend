@@ -2,8 +2,9 @@ import { useState } from 'react'
 import { createReparo, updateReparo, deleteReparo } from '../api.js'
 import { useUser } from '../context/UserContext.jsx'
 import { sumarMeses } from '../utils.js'
+import DocumentosSection from './DocumentosSection.jsx'
 
-function ReparoCard({ reparo, tramiteId, onChange }) {
+function ReparoCard({ reparo, tramite, onChange }) {
   const { user } = useUser()
   const [fechaEmision, setFechaEmision] = useState(reparo.fecha_emision || '')
   const [motivo, setMotivo] = useState(reparo.motivo_rechazo || '')
@@ -113,6 +114,14 @@ function ReparoCard({ reparo, tramiteId, onChange }) {
         <textarea rows={2} value={motivo} onChange={(e) => setMotivo(e.target.value)} style={{ resize: 'none' }} />
       </div>
 
+      <DocumentosSection
+        tramite={tramite}
+        tipo="nota_reparo"
+        reparoId={reparo.id}
+        label="Nota de reparo (documento)"
+        onChange={onChange}
+      />
+
       <div className="mono" style={{ fontSize: 10.5, color: 'var(--ink-soft)', marginBottom: 6, letterSpacing: '0.04em' }}>
         RESPUESTA AL REPARO
       </div>
@@ -163,7 +172,7 @@ export default function ReparosSection({ tramite, onChange }) {
       <label>Reparos ({reparos.length}/3)</label>
       {error && <div className="error-msg">{error}</div>}
       {reparos.map((r) => (
-        <ReparoCard key={r.id} reparo={r} tramiteId={tramite.id} onChange={onChange} />
+        <ReparoCard key={r.id} reparo={r} tramite={tramite} onChange={onChange} />
       ))}
       {siguienteNumero <= 3 && (
         <button
