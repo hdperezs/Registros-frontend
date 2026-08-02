@@ -193,7 +193,10 @@ export default function NuevoTramiteModal({ empresaId = null, onClose, onCreated
                 {tipos.length === 0 && <option value="">No hay trámites en esta categoría</option>}
                 {tipos.map((t) => (
                   <option key={t.id} value={t.id}>
-                    {t.nombre} {t.tipo_gestion ? `— ${t.tipo_gestion}` : ''}
+                    {t.nombre}
+                    {t.tipo_gestion && !/Proyecto nuevo|Regularización/.test(t.nombre)
+                      ? ` — ${t.tipo_gestion}`
+                      : ''}
                   </option>
                 ))}
               </select>
