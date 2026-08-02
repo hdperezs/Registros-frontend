@@ -35,6 +35,10 @@ const CAMPO_LABELS = {
   fecha_salida_mensajeria: 'Salida a mensajería',
   fecha_ingreso: 'Ingreso al ministerio',
   resolucion_final: 'Resolución final',
+  fecha_ingreso_instrumento: 'Ingreso de instrumento a MARN',
+  fecha_resolucion_aprobatoria: 'Resolución aprobatoria',
+  fecha_presentacion_solicitud: 'Presentación de solicitud de licencia',
+  fecha_retiro_licencia: 'Retiro de licencia ambiental',
   reparo_1: 'Reparo N° 1',
   reparo_2: 'Reparo N° 2',
   reparo_3: 'Reparo N° 3',
@@ -61,6 +65,10 @@ export default function EditarTramiteModal({ tramite: tramiteInicial, onClose, o
   const [fechaSalidaMensajeria, setFechaSalidaMensajeria] = useState(tramite.fecha_salida_mensajeria || '')
   const [fechaIngreso, setFechaIngreso] = useState(tramite.fecha_ingreso || '')
   const [resolucionFinal, setResolucionFinal] = useState(tramite.resolucion_final || '')
+  const [fechaIngresoInstrumento, setFechaIngresoInstrumento] = useState(tramite.fecha_ingreso_instrumento || '')
+  const [fechaResolucionAprobatoria, setFechaResolucionAprobatoria] = useState(tramite.fecha_resolucion_aprobatoria || '')
+  const [fechaPresentacionSolicitud, setFechaPresentacionSolicitud] = useState(tramite.fecha_presentacion_solicitud || '')
+  const [fechaRetiroLicencia, setFechaRetiroLicencia] = useState(tramite.fecha_retiro_licencia || '')
   const [auditoria, setAuditoria] = useState([])
   const [mostrarHistorial, setMostrarHistorial] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -70,6 +78,7 @@ export default function EditarTramiteModal({ tramite: tramiteInicial, onClose, o
   const enviando = useRef(false)
 
   const tieneReparos = CATEGORIAS_CON_REPARO.includes(tramite.categoria)
+  const esAmbiente = tramite.categoria === 'ambiente'
 
   useEffect(() => {
     getGestores()
@@ -104,6 +113,10 @@ export default function EditarTramiteModal({ tramite: tramiteInicial, onClose, o
         fecha_salida_mensajeria: fechaSalidaMensajeria || null,
         fecha_ingreso: fechaIngreso || null,
         resolucion_final: resolucionFinal || null,
+        fecha_ingreso_instrumento: fechaIngresoInstrumento || null,
+        fecha_resolucion_aprobatoria: fechaResolucionAprobatoria || null,
+        fecha_presentacion_solicitud: fechaPresentacionSolicitud || null,
+        fecha_retiro_licencia: fechaRetiroLicencia || null,
       })
       setTramite(actualizado)
       onUpdated()
@@ -229,6 +242,53 @@ export default function EditarTramiteModal({ tramite: tramiteInicial, onClose, o
                 </div>
 
                 <ReparosSection tramite={tramite} onChange={(actualizado) => setTramite(actualizado)} />
+              </>
+            )}
+
+            {esAmbiente && (
+              <>
+                <div className="mono" style={{ fontSize: 10.5, color: 'var(--ink-soft)', marginBottom: 6, letterSpacing: '0.04em' }}>
+                  FLUJO DEL INSTRUMENTO/LICENCIA (MARN)
+                </div>
+                <div style={{ display: 'flex', gap: 10, marginBottom: 10 }}>
+                  <div className="field" style={{ flex: 1 }}>
+                    <label>Ingreso de instrumento a MARN</label>
+                    <input
+                      type="date"
+                      value={fechaIngresoInstrumento}
+                      onChange={(e) => setFechaIngresoInstrumento(e.target.value)}
+                    />
+                  </div>
+                  <div className="field" style={{ flex: 1 }}>
+                    <label>Resolución aprobatoria</label>
+                    <input
+                      type="date"
+                      value={fechaResolucionAprobatoria}
+                      onChange={(e) => setFechaResolucionAprobatoria(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <div className="field" style={{ flex: 1 }}>
+                    <label>Presentación de solicitud de licencia</label>
+                    <input
+                      type="date"
+                      value={fechaPresentacionSolicitud}
+                      onChange={(e) => setFechaPresentacionSolicitud(e.target.value)}
+                    />
+                  </div>
+                  <div className="field" style={{ flex: 1 }}>
+                    <label>Retiro de licencia ambiental</label>
+                    <input
+                      type="date"
+                      value={fechaRetiroLicencia}
+                      onChange={(e) => setFechaRetiroLicencia(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <p className="mono" style={{ fontSize: 10.5, color: 'var(--ink-soft)', marginTop: 6 }}>
+                  El vencimiento de la licencia se registra arriba, en "Fecha de vencimiento".
+                </p>
               </>
             )}
 
