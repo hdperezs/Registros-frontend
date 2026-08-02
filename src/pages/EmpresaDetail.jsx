@@ -137,6 +137,11 @@ export default function EmpresaDetail() {
                     <div>
                       <div className="co">{t.tramite_nombre}</div>
                       {t.numero_expediente && <div className="co-sub">{t.numero_expediente}</div>}
+                      {t.estatus_calculado && (
+                        <div className="mono" style={{ fontSize: 10, color: 'var(--brass)', marginTop: 2 }}>
+                          {t.estatus_calculado}
+                        </div>
+                      )}
                     </div>
                     <div>
                       <span className={tagClass(t.categoria)}>{categoriaLabel(t.categoria)}</span>

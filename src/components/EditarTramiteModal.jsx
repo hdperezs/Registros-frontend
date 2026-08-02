@@ -36,6 +36,7 @@ const CAMPO_LABELS = {
   fecha_salida_mensajeria: 'Salida a mensajería',
   fecha_ingreso: 'Ingreso al ministerio',
   resolucion_final: 'Resolución final',
+  fecha_aprobacion: 'Fecha de aprobación',
   fecha_ingreso_instrumento: 'Ingreso de instrumento a MARN',
   fecha_resolucion_aprobatoria: 'Resolución aprobatoria',
   fecha_presentacion_solicitud: 'Presentación de solicitud de licencia',
@@ -70,6 +71,7 @@ export default function EditarTramiteModal({ tramite: tramiteInicial, onClose, o
   const [fechaSalidaMensajeria, setFechaSalidaMensajeria] = useState(tramite.fecha_salida_mensajeria || '')
   const [fechaIngreso, setFechaIngreso] = useState(tramite.fecha_ingreso || '')
   const [resolucionFinal, setResolucionFinal] = useState(tramite.resolucion_final || '')
+  const [fechaAprobacion, setFechaAprobacion] = useState(tramite.fecha_aprobacion || '')
   const [fechaIngresoInstrumento, setFechaIngresoInstrumento] = useState(tramite.fecha_ingreso_instrumento || '')
   const [fechaResolucionAprobatoria, setFechaResolucionAprobatoria] = useState(tramite.fecha_resolucion_aprobatoria || '')
   const [fechaPresentacionSolicitud, setFechaPresentacionSolicitud] = useState(tramite.fecha_presentacion_solicitud || '')
@@ -123,6 +125,7 @@ export default function EditarTramiteModal({ tramite: tramiteInicial, onClose, o
         fecha_salida_mensajeria: fechaSalidaMensajeria || null,
         fecha_ingreso: fechaIngreso || null,
         resolucion_final: resolucionFinal || null,
+        fecha_aprobacion: fechaAprobacion || null,
         fecha_ingreso_instrumento: fechaIngresoInstrumento || null,
         fecha_resolucion_aprobatoria: fechaResolucionAprobatoria || null,
         fecha_presentacion_solicitud: fechaPresentacionSolicitud || null,
@@ -159,9 +162,36 @@ export default function EditarTramiteModal({ tramite: tramiteInicial, onClose, o
         <div className="modal-head">
           <div>
             <h2 style={{ fontSize: 19 }}>{tramite.tramite_nombre}</h2>
-            <span className="mono" style={{ fontSize: 11, color: 'var(--ink-soft)' }}>
-              {categoriaLabel(tramite.categoria)}
-            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 3 }}>
+              <span className="mono" style={{ fontSize: 11, color: 'var(--ink-soft)' }}>
+                {categoriaLabel(tramite.categoria)}
+              </span>
+              {tramite.estatus_calculado && (
+                <span
+                  className="mono"
+                  style={{
+                    fontSize: 10.5,
+                    padding: '2px 8px',
+                    borderRadius: 2,
+                    letterSpacing: '0.03em',
+                    background:
+                      tramite.estatus_calculado === 'RECHAZADO'
+                        ? 'rgba(162,51,40,0.12)'
+                        : tramite.estatus_calculado === 'APROBADO' || tramite.estatus_calculado === 'FINALIZADO'
+                        ? 'rgba(46,107,76,0.12)'
+                        : 'rgba(173,138,61,0.16)',
+                    color:
+                      tramite.estatus_calculado === 'RECHAZADO'
+                        ? 'var(--seal-red)'
+                        : tramite.estatus_calculado === 'APROBADO' || tramite.estatus_calculado === 'FINALIZADO'
+                        ? 'var(--seal-green)'
+                        : 'var(--brass)',
+                  }}
+                >
+                  {tramite.estatus_calculado}
+                </span>
+              )}
+            </div>
           </div>
           <button className="close-btn" onClick={onClose}>
             ✕
@@ -246,17 +276,28 @@ export default function EditarTramiteModal({ tramite: tramiteInicial, onClose, o
                   </div>
                 </div>
 
-                <div className="field">
-                  <label>Resolución final</label>
-                  <select value={resolucionFinal} onChange={(e) => setResolucionFinal(e.target.value)}>
-                    <option value="">Sin resolución todavía</option>
-                    {RESOLUCIONES.map((r) => (
-                      <option key={r} value={r}>
-                        {RESOLUCION_LABELS[r]}
-                      </option>
-                    ))}
-                  </select>
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <div className="field" style={{ flex: 1 }}>
+                    <label>Resolución final</label>
+                    <select value={resolucionFinal} onChange={(e) => setResolucionFinal(e.target.value)}>
+                      <option value="">Sin resolución todavía</option>
+                      {RESOLUCIONES.map((r) => (
+                        <option key={r} value={r}>
+                          {RESOLUCION_LABELS[r]}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="field" style={{ flex: 1 }}>
+                    <label>Fecha de aprobación</label>
+                    <input type="date" value={fechaAprobacion} onChange={(e) => setFechaAprobacion(e.target.value)} />
+                  </div>
                 </div>
+                {resolucionFinal === 'aprobado' && fechaAprobacion && !fechaVencimiento && (
+                  <p className="mono" style={{ fontSize: 10.5, color: 'var(--seal-green)', margin: '-6px 0 10px' }}>
+                    Al guardar, el vencimiento se calcula desde esta fecha según la vigencia del catálogo
+                  </p>
+                )}
 
                 <ReparosSection tramite={tramite} onChange={(actualizado) => setTramite(actualizado)} />
               </>
