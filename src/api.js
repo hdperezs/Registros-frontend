@@ -61,8 +61,8 @@ export const createEmpresa = (data) =>
   request('/empresas', { method: 'POST', body: JSON.stringify(data) })
 export const getTiposTramite = (categoria = '') =>
   request(`/tipos-tramite?categoria=${encodeURIComponent(categoria)}`)
-export const getProximosVencer = (dias = 60, gestorId = '') =>
-  request(`/dashboard/proximos-vencer?dias=${dias}${gestorId ? `&gestor_id=${gestorId}` : ''}`)
+export const getProximosVencer = (gestorId = '') =>
+  request(`/dashboard/proximos-vencer${gestorId ? `?gestor_id=${gestorId}` : ''}`)
 export const buscarTramites = (q) => request(`/tramites/buscar?q=${encodeURIComponent(q)}`)
 export const createTramite = (data) =>
   request('/tramites', { method: 'POST', body: JSON.stringify(data) })

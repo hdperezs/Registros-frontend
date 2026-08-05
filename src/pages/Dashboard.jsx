@@ -9,12 +9,18 @@ import { useUser } from '../context/UserContext.jsx'
 
 const CATEGORIAS = ['ambiente', 'farma', 'alimentos', 'sso', 'otros']
 const VENTANAS = [
+  { label: 'Todos', valor: 'todos' },
   { label: '7 días', valor: 7 },
   { label: '30 días', valor: 30 },
   { label: '60 días', valor: 60 },
   { label: '90 días', valor: 90 },
-  { label: 'Todos', valor: 3650 },
 ]
+
+function formatFechaCorta(fechaISO) {
+  if (!fechaISO) return '—'
+  const d = new Date(fechaISO)
+  return d.toLocaleDateString('es-GT', { day: '2-digit', month: 'short', year: 'numeric' })
+}
 
 export default function Dashboard() {
   const { user } = useUser()
@@ -23,7 +29,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [categoria, setCategoria] = useState('todos')
-  const [ventana, setVentana] = useState(90)
+  const [ventana, setVentana] = useState('todos')
   const [gestores, setGestores] = useState([])
   const [gestorId, setGestorId] = useState('')
   const [busqueda, setBusqueda] = useState('')
@@ -44,7 +50,9 @@ export default function Dashboard() {
 
   function cargarDashboard() {
     setLoading(true)
-    Promise.all([getProximosVencer(ventana, gestorId), getDashboardResumen(gestorId)])
+    // Trae TODO de una sola vez — el filtro de ventana de días se aplica después,
+    // del lado del cliente, sin volver a golpear la API.
+    Promise.all([getProximosVencer(gestorId), getDashboardResumen(gestorId)])
       .then(([t, r]) => {
         setTramites(t)
         setResumen(r)
@@ -56,7 +64,7 @@ export default function Dashboard() {
   useEffect(() => {
     cargarDashboard()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ventana, gestorId])
+  }, [gestorId])
 
   useEffect(() => {
     if (!busqueda.trim() || busqueda.trim().length < 2) {
@@ -81,22 +89,34 @@ export default function Dashboard() {
   }, [busqueda])
 
   const filtrados = useMemo(() => {
-    if (categoria === 'todos') return tramites
-    return tramites.filter((t) => t.categoria === categoria)
-  }, [tramites, categoria])
+    return tramites.filter((t) => {
+      if (categoria !== 'todos' && t.categoria !== categoria) return false
+
+      // La ventana de días solo afecta a los que YA tienen fecha de vencimiento.
+      // Los que todavía no la tienen (en reparo, pendientes de aprobación, etc.)
+      // siempre se muestran, sin importar la ventana elegida.
+      if (ventana !== 'todos' && t.fecha_vencimiento) {
+        const dias = diasRestantes(t.fecha_vencimiento)
+        if (dias === null || dias > ventana) return false
+      }
+      return true
+    })
+  }, [tramites, categoria, ventana])
 
   const stats = useMemo(() => {
     let semana = 0,
       mes = 0,
-      vencidos = 0
+      vencidos = 0,
+      conVencimiento = 0
     for (const t of tramites) {
       const dias = diasRestantes(t.fecha_vencimiento)
       if (dias === null) continue
+      conVencimiento++
       if (dias < 0) vencidos++
       else if (dias <= 7) semana++
       else if (dias <= 30) mes++
     }
-    return { semana, mes, vencidos, total: tramites.length }
+    return { semana, mes, vencidos, total: tramites.length, conVencimiento }
   }, [tramites])
 
   const hayResultadosBusqueda = empresasResultado.length > 0 || expedientesResultado.length > 0
@@ -211,7 +231,7 @@ export default function Dashboard() {
             <div className="val">{stats.vencidos}</div>
           </div>
           <div className="stat">
-            <div className="lbl">Trámites con vencimiento</div>
+            <div className="lbl">Trámites totales</div>
             <div className="val">{stats.total}</div>
           </div>
         </div>
@@ -239,7 +259,11 @@ export default function Dashboard() {
                 ))}
               </select>
             )}
-            <select value={ventana} onChange={(e) => setVentana(Number(e.target.value))} style={{ maxWidth: 140 }}>
+            <select
+              value={ventana}
+              onChange={(e) => setVentana(e.target.value === 'todos' ? 'todos' : Number(e.target.value))}
+              style={{ maxWidth: 140 }}
+            >
               {VENTANAS.map((v) => (
                 <option key={v.valor} value={v.valor}>
                   {v.label}
@@ -254,24 +278,30 @@ export default function Dashboard() {
 
         {!loading && !error && (
           <div className="table-wrap" style={{ overflowX: 'auto' }}>
-            <div className="t-head" style={{ minWidth: 720 }}>
+            <div className="t-head" style={{ minWidth: 820, gridTemplateColumns: '1.9fr 1.7fr 0.9fr 0.85fr 0.95fr 0.9fr 0.9fr' }}>
               <span>EMPRESA</span>
               <span>TRÁMITE</span>
               <span>CATEGORÍA</span>
+              <span>CREADO</span>
               <span>VENCE</span>
               <span>ESTADO</span>
               <span>GESTIONADO POR</span>
             </div>
 
             {filtrados.length === 0 && (
-              <div className="empty-state">No hay trámites con vencimiento próximo en esta categoría/ventana.</div>
+              <div className="empty-state">No hay trámites en esta categoría/ventana.</div>
             )}
 
             {filtrados.map((t) => {
               const dias = diasRestantes(t.fecha_vencimiento)
               const urgencia = estadoUrgencia(dias)
               return (
-                <Link key={t.id} to={`/empresas/${t.empresa_id}`} className="t-row" style={{ minWidth: 720 }}>
+                <Link
+                  key={t.id}
+                  to={`/empresas/${t.empresa_id}`}
+                  className="t-row"
+                  style={{ minWidth: 820, gridTemplateColumns: '1.9fr 1.7fr 0.9fr 0.85fr 0.95fr 0.9fr 0.9fr' }}
+                >
                   <div>
                     <div className="co">{t.empresa_nombre}</div>
                     {t.numero_expediente && <div className="co-sub">{t.numero_expediente}</div>}
@@ -288,9 +318,18 @@ export default function Dashboard() {
                   <div>
                     <span className={tagClass(t.categoria)}>{categoriaLabel(t.categoria)}</span>
                   </div>
-                  <div>{formatFecha(t.fecha_vencimiento)}</div>
+                  <div className="mono" style={{ fontSize: 12, color: 'var(--ink-soft)' }}>
+                    {formatFechaCorta(t.creado_en)}
+                  </div>
+                  <div>{t.fecha_vencimiento ? formatFecha(t.fecha_vencimiento) : '—'}</div>
                   <div>
-                    <span className={`days ${urgencia.clase}`}>{urgencia.texto}</span>
+                    {t.fecha_vencimiento ? (
+                      <span className={`days ${urgencia.clase}`}>{urgencia.texto}</span>
+                    ) : t.estatus_calculado ? (
+                      <span className="tag tag-otros">{t.estatus_calculado}</span>
+                    ) : (
+                      <span style={{ color: 'var(--ink-soft)' }}>—</span>
+                    )}
                   </div>
                   <div className="mono" style={{ fontSize: 12, color: 'var(--ink-soft)' }}>
                     {t.asignado_a_nombre || <span style={{ color: 'var(--ink-soft)' }}>Sin asignar</span>}
