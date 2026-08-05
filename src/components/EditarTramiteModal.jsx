@@ -437,7 +437,11 @@ export default function EditarTramiteModal({ tramite: tramiteInicial, onClose, o
                 <DocumentosSection
                   tramite={tramite}
                   tipo="licencia"
-                  label="Licencia / resolución aprobada"
+                  label={
+                    tramite.categoria === 'alimentos' || tramite.categoria === 'farma'
+                      ? 'Aprobado'
+                      : 'Licencia / resolución aprobada'
+                  }
                   onChange={(actualizado) => setTramite(actualizado)}
                 />
               </div>
