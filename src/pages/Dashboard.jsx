@@ -293,7 +293,8 @@ export default function Dashboard() {
             )}
 
             {filtrados.map((t) => {
-              const dias = diasRestantes(t.fecha_vencimiento)
+              const fechaRelevante = t.fecha_vencimiento || t.fecha_limite_reparo
+              const dias = diasRestantes(fechaRelevante)
               const urgencia = estadoUrgencia(dias)
               return (
                 <Link
@@ -321,9 +322,14 @@ export default function Dashboard() {
                   <div className="mono" style={{ fontSize: 12, color: 'var(--ink-soft)' }}>
                     {formatFechaCorta(t.creado_en)}
                   </div>
-                  <div>{t.fecha_vencimiento ? formatFecha(t.fecha_vencimiento) : '—'}</div>
                   <div>
-                    {t.fecha_vencimiento ? (
+                    {fechaRelevante ? formatFecha(fechaRelevante) : '—'}
+                    {!t.fecha_vencimiento && t.fecha_limite_reparo && (
+                      <div className="co-sub">límite de reparo</div>
+                    )}
+                  </div>
+                  <div>
+                    {fechaRelevante ? (
                       <span className={`days ${urgencia.clase}`}>{urgencia.texto}</span>
                     ) : t.estatus_calculado ? (
                       <span className="tag tag-otros">{t.estatus_calculado}</span>
