@@ -275,6 +275,7 @@ export default function Dashboard() {
                   <div>
                     <div className="co">{t.empresa_nombre}</div>
                     {t.numero_expediente && <div className="co-sub">{t.numero_expediente}</div>}
+                    {t.nombre_producto && <div className="co-sub" style={{ fontStyle: 'italic' }}>{t.nombre_producto}</div>}
                   </div>
                   <div>
                     {t.tramite_nombre}

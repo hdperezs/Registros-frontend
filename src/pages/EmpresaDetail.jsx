@@ -137,6 +137,7 @@ export default function EmpresaDetail() {
                     <div>
                       <div className="co">{t.tramite_nombre}</div>
                       {t.numero_expediente && <div className="co-sub">{t.numero_expediente}</div>}
+                      {t.nombre_producto && <div className="co-sub" style={{ fontStyle: 'italic' }}>{t.nombre_producto}</div>}
                       {t.estatus_calculado && (
                         <div className="mono" style={{ fontSize: 10, color: 'var(--brass)', marginTop: 2 }}>
                           {t.estatus_calculado}

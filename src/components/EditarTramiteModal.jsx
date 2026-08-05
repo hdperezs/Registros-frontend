@@ -37,6 +37,8 @@ const CAMPO_LABELS = {
   fecha_ingreso: 'Ingreso al ministerio',
   resolucion_final: 'Resolución final',
   fecha_aprobacion: 'Fecha de aprobación',
+  nombre_producto: 'Nombre del producto',
+  numero_registro: 'N° de registro/licencia/aprobación',
   fecha_ingreso_instrumento: 'Ingreso de instrumento a MARN',
   fecha_resolucion_aprobatoria: 'Resolución aprobatoria',
   fecha_presentacion_solicitud: 'Presentación de solicitud de licencia',
@@ -61,6 +63,8 @@ export default function EditarTramiteModal({ tramite: tramiteInicial, onClose, o
   const { user } = useUser()
   const [tramite, setTramite] = useState(tramiteInicial)
   const [numeroExpediente, setNumeroExpediente] = useState(tramite.numero_expediente || '')
+  const [nombreProducto, setNombreProducto] = useState(tramite.nombre_producto || '')
+  const [numeroRegistro, setNumeroRegistro] = useState(tramite.numero_registro || '')
   const [fechaInicio, setFechaInicio] = useState(tramite.fecha_inicio)
   const [fechaVencimiento, setFechaVencimiento] = useState(tramite.fecha_vencimiento || '')
   const [estado, setEstado] = useState(tramite.estado)
@@ -116,6 +120,8 @@ export default function EditarTramiteModal({ tramite: tramiteInicial, onClose, o
     try {
       const actualizado = await updateTramite(tramite.id, {
         numero_expediente: numeroExpediente || null,
+        nombre_producto: nombreProducto || null,
+        numero_registro: numeroRegistro || null,
         fecha_inicio: fechaInicio,
         fecha_vencimiento: fechaVencimiento || null,
         estado,
@@ -221,6 +227,27 @@ export default function EditarTramiteModal({ tramite: tramiteInicial, onClose, o
                 onChange={(e) => setNumeroExpediente(e.target.value)}
               />
             </div>
+
+            {(tramite.categoria === 'alimentos' || tramite.categoria === 'farma') && (
+              <div style={{ display: 'flex', gap: 10 }}>
+                <div className="field" style={{ flex: 1 }}>
+                  <label>Nombre del producto</label>
+                  <input
+                    type="text"
+                    value={nombreProducto}
+                    onChange={(e) => setNombreProducto(e.target.value)}
+                  />
+                </div>
+                <div className="field" style={{ flex: 1 }}>
+                  <label>N° de registro/licencia/aprobación</label>
+                  <input
+                    type="text"
+                    value={numeroRegistro}
+                    onChange={(e) => setNumeroRegistro(e.target.value)}
+                  />
+                </div>
+              </div>
+            )}
 
             <div className="field">
               <label>Asignado a</label>

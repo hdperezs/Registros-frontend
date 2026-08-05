@@ -15,6 +15,8 @@ export default function NuevoTramiteModal({ empresaId = null, onClose, onCreated
   const [tipoId, setTipoId] = useState('')
   const [fechaInicio, setFechaInicio] = useState(new Date().toISOString().slice(0, 10))
   const [numeroExpediente, setNumeroExpediente] = useState('')
+  const [nombreProducto, setNombreProducto] = useState('')
+  const [numeroRegistro, setNumeroRegistro] = useState('')
   const [notas, setNotas] = useState('')
   const [gestores, setGestores] = useState([])
   const [asignadoA, setAsignadoA] = useState('')
@@ -77,6 +79,8 @@ export default function NuevoTramiteModal({ empresaId = null, onClose, onCreated
         numero_expediente: numeroExpediente || null,
         notas: notas || null,
         asignado_a: asignadoA || null,
+        nombre_producto: nombreProducto || null,
+        numero_registro: numeroRegistro || null,
       })
       onCreated()
     } catch (err) {
@@ -211,6 +215,27 @@ export default function NuevoTramiteModal({ empresaId = null, onClose, onCreated
                 placeholder="DRCA-XXXX-2026"
               />
             </div>
+
+            {(categoria === 'alimentos' || categoria === 'farma') && (
+              <div style={{ display: 'flex', gap: 10 }}>
+                <div className="field" style={{ flex: 1 }}>
+                  <label>Nombre del producto</label>
+                  <input
+                    type="text"
+                    value={nombreProducto}
+                    onChange={(e) => setNombreProducto(e.target.value)}
+                  />
+                </div>
+                <div className="field" style={{ flex: 1 }}>
+                  <label>N° de registro/licencia/aprobación</label>
+                  <input
+                    type="text"
+                    value={numeroRegistro}
+                    onChange={(e) => setNumeroRegistro(e.target.value)}
+                  />
+                </div>
+              </div>
+            )}
 
             <div className="field">
               <label>Asignado a (opcional)</label>
